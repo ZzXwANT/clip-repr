@@ -23,7 +23,7 @@ class VIT(nn.Module):
         x = self.PatchEmbedding(x)  # (B, n_patches, embed_dims)
         x = torch.cat((self.cls_token.expand(x.size(0), -1, -1), x), dim=1)
         x = x + self.pos_embedding
-        x = self.ln_pre(x)
+        x = self.ln_pre(x)            # 论文中额外的ln
         x = self.Transformer(x)
         x = self.ln_post(x[:, 0, :])  # 取出cls_token对应的输出
         x = self.o_proj(x)

@@ -9,7 +9,7 @@ class PatchEmbedding(nn.Module):
         self.in_chans = in_chans
         self.embed_dims = embed_dims
         self.n_patches = (self.img_size // self.patch_size) ** 2
-        
+        # 分块 + 线性映射
         self.proj = nn.Conv2d(
             in_channels = self.in_chans,
             out_channels = self.embed_dims,
@@ -17,9 +17,9 @@ class PatchEmbedding(nn.Module):
             stride = self.patch_size,
             )
         
-    def forward(self, x):     # (B, C ,img_size ,img_size)
-        x = self.proj(x)      # (B, embed,  n_patches^1/2 ,n_patches^1/2)                
-        x = torch.flatten(x, 2)         # (B, embed ,n_patches)
+    def forward(self, x):     # (B, C, img_size, img_size)
+        x = self.proj(x)      # (B, embed,  n_patches^1/2, n_patches^1/2)                
+        x = torch.flatten(x, 2)         # (B, embed, n_patches)
         x = torch.transpose(x, 1, 2)    # (B, n_patch, embed)
         return x
         
