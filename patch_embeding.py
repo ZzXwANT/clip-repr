@@ -41,4 +41,4 @@ if __name__ == "__main__":
     x = torch.randn(2, 3, 224, 224)
     patch_embedding = PatchEmbedding(224, 32, 3, 768)
     x = patch_embedding(x)
-    print(x.shape)
+    print(x.shape)  # (2, 49, 768)  
