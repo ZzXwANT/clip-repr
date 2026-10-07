@@ -35,10 +35,21 @@ class MultiHeadAtten(nn.Module):
         
         # (B, num_heads, N, N)
         qkT = (q @ k.transpose(-2, -1)) / self.scale
-        casusal_mask = torch.triu(
-            torch.full((N,N), float("-inf"), device=x.device, dtype=qkT.dtype), diagonal=1
-        )   # 上三角 -inf 掩码
-        attn = torch.softmax(qkT + casusal_mask if self.mask is not None else qkT, dim=-1)
+        
+        # 因果注意力掩码
+        if self.mask is not None:
+            # 上三角 -inf 掩码
+            casusal_mask = torch.triu(torch.full((N,N), float("-inf")), diagonal=1)   
+            
+            # casusal_mask = torch.zeros(N,N)
+            # for i in range(N):
+            #     for j in range(N):
+            #         if j > i:
+            #             casusal_mask[i][j] = float("-inf")
+                        
+            attn = torch.softmax(qkT + casusal_mask, dim=-1)
+        else:
+            attn = torch.softmax(qkT, dim=-1)
         
         # (B, num_heads, N, head_dims)
         score = attn @ v
