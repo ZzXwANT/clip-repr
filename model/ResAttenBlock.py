@@ -5,12 +5,13 @@ from LayerNorm import LayerNorm
 from GELU import GELU
 
 class ResAttenBlock(nn.Module):
-    def __init__(self, embed_dims, num_heads, hidden_dims):
+    def __init__(self, embed_dims, num_heads, hidden_dims, mask):
         super().__init__()
         self.embed_dims = embed_dims
         self.hidden_dims = hidden_dims  
         self.num_heads = num_heads
-        self.atten = MultiHeadAtten(self.embed_dims, self.num_heads)
+        self.mask = mask
+        self.atten = MultiHeadAtten(self.embed_dims, self.num_heads, self.mask)
         self.ln1 = LayerNorm(self.embed_dims)
         self.ln2 = LayerNorm(self.embed_dims)
         

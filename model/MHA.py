@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class MultiHeadAtten(nn.Module):
-    def __init__(self, embed_dims, num_heads, mask=None):
+    def __init__(self, embed_dims, num_heads, mask=False):
         super().__init__()
         self.embed_dims = embed_dims
         self.num_heads = num_heads
@@ -37,7 +37,7 @@ class MultiHeadAtten(nn.Module):
         qkT = (q @ k.transpose(-2, -1)) / self.scale
         
         # 因果注意力掩码
-        if self.mask is not None:
+        if self.mask:
             # 上三角 -inf 掩码
             casusal_mask = torch.triu(torch.full((N,N), float("-inf")), diagonal=1)   
             
@@ -69,7 +69,7 @@ class MultiHeadAtten(nn.Module):
         return self.o_proj(socre)   # 混合多头 atten
     
 if __name__ == "__main__":
-    mha = MultiHeadAtten(embed_dims=768, num_heads=12)
+    mha = MultiHeadAtten(embed_dims=768, num_heads=12, mask=True)
     x = torch.rand(2, 10, 768)   # (B, N, D)
     out = mha(x)
     print(out.shape)   # (2, 10, 768)
