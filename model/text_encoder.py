@@ -1,3 +1,6 @@
+from asyncio import new_event_loop
+from pickletools import read_uint1
+
 from bytes_to_unicode import bytes_to_unicode
 import regex as re
 import ftfy
@@ -44,7 +47,7 @@ class TextToeknizer():
         
     def bpe(self, word):
         if word in self.cache:
-            return self.cache[word]
+            return [self.cache[word]]
         tokens = list(word[:-1]) + [word[-1] + '</w>']        
         
         while True:
@@ -59,9 +62,16 @@ class TextToeknizer():
             best_pair = min(candidates, key=lambda pair: self.bpe_ranks[pair])
             idxs = pairs_with_idx[best_pair]
             
-            for i in idxs:
-                # 有问题！ 
-                new_tokens = tokens[:i] + [''.join(best_pair)] + tokens[i+2:]
+            new_tokens = []
+            i = 0 
+            while i < len(tokens):
+                if i in idxs:
+                    new_tokens.append(tokens[i] + tokens[i+1])
+                    i += 2
+                else:
+                    new_tokens.append(tokens[i])
+                    i += 1
+                    
             tokens = new_tokens
             
             if len(tokens) == 1:
@@ -84,7 +94,7 @@ class TextToeknizer():
     
 if __name__ == "__main__":
     tokenizer = TextToeknizer(merges_path="/Users/mac/proj/clip-repr/model/bpe_simple_vocab_16e6.txt")
-    tokenizer.decode([585, 533, 13306])
-    # tokenizer.encode("it is unbelievable")
+    # tokenizer.decode([585, 533, 13306])
+    tokenizer.encode("aaaa it is unbelievable")
     
     
