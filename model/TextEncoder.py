@@ -1,10 +1,11 @@
-from asyncio import new_event_loop
-from pickletools import read_uint1
-
-from bytes_to_unicode import bytes_to_unicode
+from .bytes_to_unicode import bytes_to_unicode
 import regex as re
 import ftfy
 import html
+import torch.nn as nn
+import torch
+from .LayerNorm import LayerNorm    
+from .Transformer import Transformer
 
 def record_pairs(word):
     pairs_with_idx = dict()
@@ -23,20 +24,20 @@ def whitespace_clean(text):
     return text.strip()
 
 class TextToeknizer():
-    def __init__(self, merges_path):
+    def __init__(self,vocab_size, merges_path):
         with open(merges_path, "r", encoding="utf-8") as f:
             merges = f.read().split("\n")
-        merges = merges[1:49152-256-2+1]
+        merges = merges[1:vocab_size-256-2+1 - 256]        # 多 *</w>
         merges = [tuple(merge.split()) for merge in merges]
         self.byte_encoder = bytes_to_unicode()  # dict(int, str) 
         self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}  # dict(str, int) 
         
         # 构造 vocab
         vocab = list(self.byte_encoder.values())
-        vocab = vocab + [v + '</w>' for v in vocab]  # 保证每个字符都能被编码
+        vocab = vocab + [v + '</w>' for v in vocab]  # 256
         for merge in merges:
             vocab.append(''.join(merge))
-        vocab.extend(['<|startoftext|>', '<|endoftext|>'])
+        vocab.extend(['<|startoftext|>', '<|endoftext|>'])  # 2
         self.encoder = dict(zip(vocab, range(len(vocab))))
         
         self.decoder = {v: k for k, v in self.encoder.items()}
@@ -79,12 +80,16 @@ class TextToeknizer():
     
     def encode(self, text):
         # gpt-2 预处理
+        bpe_text = []
         bpe_tokens = []
         text = whitespace_clean(basic_clean(text)).lower()
         for word in re.findall(self.pat, text):
             word_unic = ''.join(self.byte_encoder[b] for b in word.encode('utf-8'))
-            bpe_tokens.extend(self.encoder[token] for token in self.bpe(word_unic))
-        return bpe_tokens
+            for token in self.bpe(word_unic):
+                bpe_text.append(token)
+                bpe_tokens.append(self.encoder[token])
+            
+        return bpe_text, bpe_tokens
     
     def decode(self, tokens):
         word_unic = ''.join(self.decoder[token] for token in tokens)
@@ -92,9 +97,44 @@ class TextToeknizer():
         
         return text
     
+    
+class TextEmbedding(nn.Module):
+    def __init__(self, vocab_size, embedding_dims):
+        super().__init__()
+        self.vocab_size = vocab_size
+        self.embedding_dims = embedding_dims
+        self.embedding = nn.Parameter(
+            torch.empty(self.vocab_size, self.embedding_dims)
+        )
+        nn.init.normal_(self.embedding, mean=0.0, std=0.02)
+        
+    def forward(self, tokens):
+        return self.embedding[tokens]   # 查表
+
+class TextEncoder(nn.Module):
+    def __init__(self, embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length):
+        super().__init__()
+        self.ln_final = LayerNorm(embed_dims)
+        self.text_proj = nn.Linear(embed_dims, output_dims, bias=False)
+        self.pos_embedding = nn.Parameter(
+            torch.randn(1, context_length, embed_dims)
+        )
+        self.transformer = Transformer(embed_dims, num_heads, hidden_dims, num_layers, True, output_dims)
+        
+    def forward(self, x):
+        x = x + self.pos_embedding
+        x = self.transformer(x)
+        x = self.ln_final(x)
+        x = self.text_proj(x)
+        
+        return x
 if __name__ == "__main__":
+    TextEmbedding = TextEmbedding(8, 768)
+    embeddings = TextEmbedding(torch.randint(8,(1, 8)))
+    
     tokenizer = TextToeknizer(merges_path="/Users/mac/proj/clip-repr/model/bpe_simple_vocab_16e6.txt")
     # tokenizer.decode([585, 533, 13306])
     tokenizer.encode("aaaa it is unbelievable")
+    
     
     

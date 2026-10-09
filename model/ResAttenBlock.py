@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from MHA import MultiHeadAtten 
-from LayerNorm import LayerNorm
-from GELU import GELU
+from .MHA import MultiHeadAtten 
+from .LayerNorm import LayerNorm
+from .GELU import GELU
 
 class ResAttenBlock(nn.Module):
     def __init__(self, embed_dims, num_heads, hidden_dims, mask):
