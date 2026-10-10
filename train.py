@@ -2,9 +2,11 @@ from model.ImageEncoder import VIT, PatchEmbedding
 from model.TextEncoder import TextToeknizer, TextEmbedding, TextEncoder
 from PIL import Image
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torchvision import transforms
+
 
 img_size=224
 patch_size=32 
@@ -45,10 +47,27 @@ tokens = torch.tensor(tokens).unsqueeze(0)  # [bz, context_length]
 text_embeddings = text_embed(tokens)        # [bz, context_length, embed_dims]
 
 # encoder
-img_encoder = VIT(img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims)  # (bz, CLS(1), output_dims)
-text_encoder =  TextEncoder(embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length)  # (bz, context_length, output_dims)
+img_encoder = VIT(img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims)  
+text_encoder =  TextEncoder(embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length)  
 
-img_features = img_encoder(img)
-text_features = text_encoder(text_embeddings)[:, eot_idx, :]
+img_features = img_encoder(img)   # (bz, CLS(1), output_dims)
+text_features = text_encoder(text_embeddings)[:, eot_idx, :] # (bz, eot, output_dims)
+
+def l2_norm(input, dim=-1):
+    return input / torch.sqrt(torch.sum(input ** 2, dim=dim, keepdim=True))
+
+logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07)) # 原文 1/0.07 初始化 tao
+
+img_features = l2_norm(img_features)
+text_features = l2_norm(text_features)
+
+logits = img_features @ text_features.T * logit_scale.exp() # (bzI, bzT)
+
+labels = torch.arange(logits.shape[0])
+loss_cross = nn.CrossEntropyLoss()
+
+loss_img = loss_cross(logits, labels)
+loss_text = loss_cross(logits.T, labels)
+loss = (loss_img + loss_text) / 2
 
 print("")
