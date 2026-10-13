@@ -3,6 +3,13 @@ from .tokenizer import TextToeknizer
 from torch.utils.data import Dataset
 from torchvision import datasets, transforms
 import torch
+from pathlib import Path
+
+merges_path = (
+    Path(__file__).resolve().parents[1]
+    / "model"
+    / "bpe_simple_vocab_16e6.txt"
+)
 
 CIFAR10_CLASSES = [
     "airplane", "automobile", "bird", "cat", "deer",
@@ -15,7 +22,7 @@ class Dataset(Dataset):
         self.ds = datasets.CIFAR10(root=root, train=train, download=True, transform=self.transform)
         
         self.prompts = [f"a photo of a {name}" for name in CIFAR10_CLASSES]
-        self.tokenizer = TextToeknizer(vocab_size, merges_path="/Users/mac/proj/clip-repr/model/bpe_simple_vocab_16e6.txt")
+        self.tokenizer = TextToeknizer(vocab_size, merges_path = merges_path)
         self.context_length = context_length
 
     def __len__(self):
