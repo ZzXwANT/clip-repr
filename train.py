@@ -1,73 +1,70 @@
-from model.ImageEncoder import VIT, PatchEmbedding
-from model.TextEncoder import TextToeknizer, TextEmbedding, TextEncoder
-from PIL import Image
+from model.clip import clip
+from loss import contrastive_loss
+from optim import create_optimizer
 
-import numpy as np
 import torch
-import torch.nn as nn
-from torchvision import transforms
+from torch.utils.data import DataLoader
+from config import config
+from data.dataset import Dataset
 
+import os
+path = os.path.dirname(os.path.abspath(__file__))
+data_root = os.path.join(path, "data")
 
-img_size=224
-patch_size=32 
-in_chans=3
-vocab_size=49152 + 256
-context_length=77
-embed_dims=768
-num_heads=12
-hidden_dims=2048
-num_layers=12
-output_dims=512
- 
-image = Image.open('/Users/mac/proj/clip-repr/docs/image_encoder.png').convert('RGB')
-text = "A photo of image_encoder by clip"
+img_size = config.img_size
+patch_size = config.patch_size
+in_chans = config.in_chans
+vocab_size = config.vocab_size
+context_length = config.context_length
+embed_dims = config.embed_dims
+num_heads = config.num_heads
+hidden_dims = config.hidden_dims
+num_layers = config.num_layers
+output_dims = config.output_dims
+learning_rate = config.learning_rate
+num_epochs = config.num_epochs
+weight_decay = config.weight_decay
+batch_size = config.batch_size
 
-img_embed = PatchEmbedding(img_size, patch_size, in_chans, embed_dims)
-tokenizer = TextToeknizer(vocab_size, merges_path="/Users/mac/proj/clip-repr/model/bpe_simple_vocab_16e6.txt")
-text_embed = TextEmbedding(vocab_size, embed_dims)
+model = clip(img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length, vocab_size)
 
+optimizer = create_optimizer(model)
 
-# 图像处理
-transform = transforms.Compose([transforms.Resize((224,224)), transforms.ToTensor()])
-img = transform(image).unsqueeze(0) # (1, 3, 244, 244)
+train_ds = Dataset(data_root, True, img_size, context_length, vocab_size)
+test_ds = Dataset(data_root, False, img_size, context_length, vocab_size)
 
-# 文本处理
-input_text = '<|startoftext|> ' + text + ' <|endoftext|>'
-bpe_text, tokens = tokenizer.encode(input_text)   # eg: [424, 23, 124, ...]
-eot_token = tokens[-1]
+train_loader = DataLoader(
+    train_ds,
+    batch_size, 
+    shuffle=True, 
+    num_workers=0,
+    drop_last=True,
+)
+test_loader = DataLoader(
+    test_ds,
+    batch_size, 
+    shuffle=False, 
+    num_workers=0,
+    drop_last=False,
+)
 
-if len(tokens) > context_length:
-    tokens = tokens[:context_length]
-    tokens[-1] = eot_token
-    
-eot_idx = len(tokens) - 1  # 截断后、padding 前记录
-tokens += [0] * (context_length - len(tokens))
+total_steps = num_epochs * len(train_loader)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    optimizer,
+    T_max=total_steps,
+    eta_min=0.0,  # 最低学习率
+)
 
-tokens = torch.tensor(tokens).unsqueeze(0)  # [bz, context_length]
-text_embeddings = text_embed(tokens)        # [bz, context_length, embed_dims]
-
-# encoder
-img_encoder = VIT(img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims)  
-text_encoder =  TextEncoder(embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length)  
-
-img_features = img_encoder(img)   # (bz, CLS(1), output_dims)
-text_features = text_encoder(text_embeddings)[:, eot_idx, :] # (bz, eot, output_dims)
-
-def l2_norm(input, dim=-1):
-    return input / torch.sqrt(torch.sum(input ** 2, dim=dim, keepdim=True))
-
-logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07)) # 原文 1/0.07 初始化 tao
-
-img_features = l2_norm(img_features)
-text_features = l2_norm(text_features)
-
-logits = img_features @ text_features.T * logit_scale.exp() # (bzI, bzT)
-
-labels = torch.arange(logits.shape[0])
-loss_cross = nn.CrossEntropyLoss()
-
-loss_img = loss_cross(logits, labels)
-loss_text = loss_cross(logits.T, labels)
-loss = (loss_img + loss_text) / 2
-
+for epoch in range(num_epochs):
+    for imgs, tokens, labels in train_loader:
+        optimizer.zero_grad()
+        
+        logits = model(imgs, tokens)
+        loss = contrastive_loss(logits, labels)
+        loss.backward()
+        optimizer.step()
+        with torch.no_grad():
+            model.logit_scale.clamp_(max=4.605170186)  # 原论文 ln(100) 约束
+        scheduler.step()  
+        
 print("")

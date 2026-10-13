@@ -39,7 +39,7 @@ class MultiHeadAtten(nn.Module):
         # 因果注意力掩码
         if self.mask:
             # 上三角 -inf 掩码
-            casusal_mask = torch.triu(torch.full((N,N), float("-inf")), diagonal=1)   
+            casusal_mask = torch.triu(torch.full((N,N), float("-inf"), dtype=x.dtype, device=x.device), diagonal=1)   
             
             # casusal_mask = torch.zeros(N,N)
             # for i in range(N):
