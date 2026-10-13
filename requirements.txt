@@ -1,0 +1,9 @@
+# Direct project dependencies, pinned to the versions used for validation.
+# Select the appropriate PyTorch CUDA installation source on the server.
+torch==2.9.1
+torchvision==0.24.1
+numpy==1.26.4
+Pillow==11.3.0
+tqdm==4.67.1
+regex==2026.1.15
+ftfy==6.3.1
