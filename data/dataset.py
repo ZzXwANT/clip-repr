@@ -24,16 +24,19 @@ class Dataset(Dataset):
         self.prompts = [f"a photo of a {name}" for name in CIFAR10_CLASSES]
         self.tokenizer = TextToeknizer(vocab_size, merges_path = merges_path)
         self.context_length = context_length
-
+        # 由于类别与tokenizer不变，提前缓存
+        self.tokens = torch.stack([
+            self.encode_text(text)
+            for text in self.prompts
+        ])  # [10, 77]，torch.long
+        
     def __len__(self):
         return len(self.ds)
 
     def __getitem__(self, idx):
         image, label = self.ds[idx]
-        text = self.prompts[label]
-        tokens = self.encode_text(text)
         
-        return image, tokens, label
+        return image, self.tokens_list[label], label
 
     def encode_text(self, text):
         # 文本处理

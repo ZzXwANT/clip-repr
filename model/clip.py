@@ -12,8 +12,6 @@ class clip(nn.Module):
         self.img_encoder = VIT(img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims)  
         self.text_encoder =  TextEncoder(embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length, attn_mask=True)
         
-        # embedded
-        self.img_embed = PatchEmbedding(img_size, patch_size, in_chans, embed_dims)
         self.text_embed = TextEmbedding(vocab_size, embed_dims)  
         
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))  # 原文 1/0.07 初始化 tao

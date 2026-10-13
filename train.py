@@ -14,6 +14,7 @@ from tqdm import tqdm
 import logging
 import time
 from pathlib import Path
+from torch.utils.tensorboard import SummaryWriter
 
 def main():
     img_size = config.img_size
@@ -29,7 +30,8 @@ def main():
     num_epochs = config.num_epochs
     batch_size = config.batch_size
     resume = config.resume
-
+    num_workers = config.num_workers
+    
     train_ds = Dataset(data_root, True, img_size, context_length, vocab_size)
     test_ds = Dataset(data_root, False, img_size, context_length, vocab_size)
 
@@ -37,14 +39,18 @@ def main():
         train_ds,
         batch_size, 
         shuffle=True, 
-        num_workers=0,
+        num_workers=num_workers,
+        pin_memory=True,
+        persistent_workers=True,
         drop_last=True,
     )
     test_loader = DataLoader(
         test_ds,
         batch_size, 
         shuffle=False, 
-        num_workers=0,
+        num_workers=num_workers,
+        pin_memory=True,
+        persistent_workers=True,
         drop_last=False,
     )
 
@@ -95,6 +101,11 @@ def main():
 
         start_epoch = checkpoint["epoch"] + 1
         best_acc = checkpoint["best_acc"]
+        
+    writer = SummaryWriter(
+        log_dir=str(output_dir / "tensorboard"),
+        purge_step=start_epoch + 1 if resume else None,
+    )
     
     for epoch in range(start_epoch, num_epochs):
         started = time.perf_counter()
@@ -110,6 +121,18 @@ def main():
             time.perf_counter() - started,
         )
         
+        step = epoch + 1
+
+        writer.add_scalar("train/loss", avg_loss, step)
+        writer.add_scalar("eval/accuracy", acc, step)
+        writer.add_scalar(
+            "train/lr", optimizer.param_groups[0]["lr"], step
+        )
+        writer.add_scalar(
+            "train/logit_scale", model.logit_scale.exp().item(), step
+        )
+        writer.flush()
+        
         is_best = acc > best_acc
         best_acc = max(best_acc, acc)
 
@@ -124,20 +147,25 @@ def main():
         torch.save(checkpoint, output_dir / "last.pt")
         if is_best:
             torch.save(checkpoint, output_dir / "best.pt")
-
+    writer.close()
+    
 def train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch):
     # 训练流程
     total_loss = 0.0
     total_samples = 0
     model.train()
     for imgs, tokens, labels in tqdm(train_loader, desc=f"Epoch {epoch}"):
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
         
-        imgs = imgs.to(device)
-        tokens = tokens.to(device)
-        labels = labels.to(device)
-        logits = model(imgs, tokens)
-        loss = contrastive_loss(logits, labels)
+        # pinned memory 配合 non_blocking=True 可以减少不必要的搬运同步
+        imgs = imgs.to(device, non_blocking=True)
+        tokens = tokens.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
+        # 计算过程bf16
+        with torch.autocast("cuda", dtype=torch.bfloat16):
+            logits = model(imgs, tokens)
+        # loss保持fp32
+        loss = contrastive_loss(logits.float(), labels)
         loss.backward()
         optimizer.step()
         with torch.no_grad():

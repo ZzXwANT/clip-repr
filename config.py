@@ -10,8 +10,9 @@ class config:
     num_layers = 12
     output_dims = 512
     
-    batch_size = 32
-    learning_rate = 3e-4
+    num_workers = 8
+    batch_size = 256
+    learning_rate = 1e-4
     num_epochs = 40
     weight_decay = 0.01  
     resume = False
