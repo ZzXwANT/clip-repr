@@ -1,6 +1,6 @@
 from PIL import Image
 from .tokenizer import TextToeknizer
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from torchvision import datasets, transforms
 import torch
 
@@ -24,6 +24,11 @@ class Dataset(Dataset):
     def __getitem__(self, idx):
         image, label = self.ds[idx]
         text = self.prompts[label]
+        tokens = self.encoder_text(text)
+        
+        return image, tokens, label
+
+    def encoder_text(self, text):
         # 文本处理
         input_text = '<|startoftext|> ' + text + ' <|endoftext|>'
         _, tokens = self.tokenizer.encode(input_text)   # eg: [424, 23, 124, ...]
@@ -34,11 +39,7 @@ class Dataset(Dataset):
             tokens[-1] = eot_id  # 截断后保留 EOT
             
         tokens += [0] * (self.context_length - len(tokens))
-        tokens = torch.tensor(tokens, dtype=torch.long)
-
-        return image, tokens, label
-
-    
+        return torch.tensor(tokens, dtype=torch.long)
         
     
     
