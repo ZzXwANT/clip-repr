@@ -14,3 +14,4 @@ class config:
     learning_rate = 3e-4
     num_epochs = 40
     weight_decay = 0.01  
+    resume = False
