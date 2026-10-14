@@ -25,7 +25,7 @@ class Dataset(Dataset):
         self.tokenizer = TextToeknizer(vocab_size, merges_path = merges_path)
         self.context_length = context_length
         # 由于类别与tokenizer不变，提前缓存
-        self.tokens = torch.stack([
+        self.tokens_list = torch.stack([
             self.encode_text(text)
             for text in self.prompts
         ])  # [10, 77]，torch.long

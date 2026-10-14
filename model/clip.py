@@ -1,5 +1,5 @@
 from model.TextEncoder import TextEncoder, TextEmbedding
-from model.ImageEncoder import VIT, PatchEmbedding
+from model.ImageEncoder import VIT
 import torch.nn as nn
 import torch
 import numpy as np
