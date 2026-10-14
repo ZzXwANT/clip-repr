@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 def contrastive_loss(logits, label):

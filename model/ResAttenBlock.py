@@ -12,6 +12,7 @@ class ResAttenBlock(nn.Module):
         self.num_heads = num_heads
         self.mask = mask
         self.atten = MultiHeadAtten(self.embed_dims, self.num_heads, self.mask)
+
         self.ln1 = LayerNorm(self.embed_dims)
         self.ln2 = LayerNorm(self.embed_dims)
         

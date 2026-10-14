@@ -20,7 +20,7 @@ class TextEncoder(nn.Module):
     def __init__(self, embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length, attn_mask):
         super().__init__()
         self.ln_final = LayerNorm(embed_dims)
-        self.text_proj = nn.Linear(embed_dims, output_dims, bias=False)
+        self.text_proj = nn.Linear(embed_dims, output_dims, bias=False) # 统一映射output_dims
         self.pos_embedding = nn.Parameter(
             torch.randn(1, context_length, embed_dims)
         )

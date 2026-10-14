@@ -39,12 +39,14 @@ def main():
     hidden_dims = config.hidden_dims
     num_layers = config.num_layers
     output_dims = config.output_dims
+    
     num_epochs = config.num_epochs
+    warmup_epochs = config.warmup_epochs
     batch_size = config.batch_size
     resume = config.resume
     num_workers = config.num_workers
-    warmup_epochs = config.warmup_epochs
     
+    # 数据
     train_ds = Dataset(data_root, True, img_size, context_length, vocab_size)
     test_ds = Dataset(data_root, False, img_size, context_length, vocab_size)
 
@@ -67,6 +69,7 @@ def main():
         drop_last=False,
     )
 
+    # 模型
     model = clip(img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length, vocab_size)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -77,7 +80,8 @@ def main():
         test_ds.encode_text(prompt)
         for prompt in test_ds.prompts
     ]).to(device)
-
+    
+    # warmup + 余弦衰减lr
     optimizer = create_optimizer(model)
     steps_per_epoch = len(train_loader)         # bz 数量
     warmup_steps = warmup_epochs * steps_per_epoch
@@ -101,6 +105,7 @@ def main():
         milestones=[warmup_steps],   
     )
     
+    # record
     output_dir = Path(path) / "outputs"
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -115,7 +120,7 @@ def main():
 
     start_epoch = 0
     best_acc = -1.0
-    
+
     if resume:
         checkpoint = torch.load(
         output_dir / "last.pt",
@@ -135,12 +140,14 @@ def main():
         purge_step=start_epoch + 1 if resume else None,
     )
     
+    # 训练 loop
     for epoch in range(start_epoch, num_epochs):
         started = time.perf_counter()
 
         avg_loss = train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch)
         
         acc = evaluate(model, test_loader, device, class_tokens)
+        
         logging.info(
             "Epoch %d/%d | loss=%.4f | acc=%.2f%% | lr=%.2e | time=%.1fs",
             epoch + 1, num_epochs,

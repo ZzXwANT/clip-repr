@@ -14,7 +14,7 @@ class clip(nn.Module):
         
         self.text_embed = TextEmbedding(vocab_size, embed_dims)  
         
-        self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))  # 原文 1/0.07 初始化 tao
+        self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))  # 原文 1/0.07 初始化 tau
         
     def encode_image(self, imgs):
         features = self.img_encoder(imgs)
@@ -22,19 +22,20 @@ class clip(nn.Module):
 
     def encode_text(self, tokens):
         batch_idx = torch.arange(tokens.shape[0], device=tokens.device)
-        eot_idx = tokens.argmax(dim=-1)
+        eot_idx = tokens.argmax(dim=-1)     # 末尾token包含前面所有位置特征
         text_embeddings = self.text_embed(tokens)
-        # (1(bz), 1(eot), output_dims) 
+        # (bz, 1(eot), output_dims) 
         text_features = self.text_encoder(text_embeddings)[batch_idx, eot_idx, :]  
         
         return self.l2_norm(text_features)
     
     def forward(self, imgs, tokens):
+        # (B, output_dims)
         img_features = self.encode_image(imgs)
         text_features = self.encode_text(tokens)
-        
+        # (B, B)
         logits = img_features @ text_features.T * self.logit_scale.exp() # (bzI, bzT)
-                
+        
         return logits
     
     def l2_norm(self, input, dim=-1):

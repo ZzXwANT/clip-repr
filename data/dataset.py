@@ -18,6 +18,7 @@ CIFAR10_CLASSES = [
 
 class Dataset(Dataset):
     def __init__(self, root, train, img_size, context_length, vocab_size):
+        # 数据增强
         self.transform_train = transforms.Compose(
             [
                 transforms.Resize((img_size, img_size)), 
