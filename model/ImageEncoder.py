@@ -42,9 +42,10 @@ class PatchEmbedding(nn.Module):
 class VIT(nn.Module):
     def __init__(self, img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims):
         super().__init__()
-        self.cls_token = nn.Parameter(torch.randn(1, 1, embed_dims))
+        scale = embed_dims ** -0.5  # 对齐原版的缩放randn
+        self.cls_token = nn.Parameter(scale * torch.randn(1, 1, embed_dims))
         self.pos_embedding = nn.Parameter(
-            torch.randn(1, (img_size//patch_size)**2 + 1, embed_dims)
+            scale * torch.randn(1, (img_size//patch_size)**2 + 1, embed_dims)
         )
         
         self.ln_pre = LayerNorm(embed_dims)

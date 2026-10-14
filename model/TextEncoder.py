@@ -24,6 +24,7 @@ class TextEncoder(nn.Module):
         self.pos_embedding = nn.Parameter(
             torch.randn(1, context_length, embed_dims)
         )
+        nn.init.normal_(self.embedding, mean=0.0, std=0.01) # 添加 std=0.01 
         self.transformer = Transformer(embed_dims, num_heads, hidden_dims, num_layers, attn_mask, output_dims)
         
     def forward(self, x):
