@@ -43,6 +43,7 @@ def main():
     batch_size = config.batch_size
     resume = config.resume
     num_workers = config.num_workers
+    warmup_epochs = config.warmup_epochs
     
     train_ds = Dataset(data_root, True, img_size, context_length, vocab_size)
     test_ds = Dataset(data_root, False, img_size, context_length, vocab_size)
@@ -78,11 +79,26 @@ def main():
     ]).to(device)
 
     optimizer = create_optimizer(model)
-    total_steps = num_epochs * len(train_loader)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    steps_per_epoch = len(train_loader)         # bz 数量
+    warmup_steps = warmup_epochs * steps_per_epoch
+    total_steps = num_epochs * steps_per_epoch
+    warmup_scheduler = torch.optim.lr_scheduler.LinearLR(
         optimizer,
-        T_max=total_steps,
-        eta_min=0.0,  # 最低学习率
+        start_factor=0.01,
+        end_factor=1.0,
+        total_iters=warmup_steps,
+    )
+
+    cosine_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=total_steps - warmup_steps,
+        eta_min=0.0,
+    )
+
+    scheduler = torch.optim.lr_scheduler.SequentialLR(
+        optimizer,
+        schedulers=[warmup_scheduler, cosine_scheduler],
+        milestones=[warmup_steps],   
     )
     
     output_dir = Path(path) / "outputs"

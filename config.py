@@ -17,3 +17,5 @@ class config:
     num_epochs = 100
     weight_decay = 0.01  
     resume = False
+    
+    warmup_epochs = 5 # 添加 warmup 稳定前期训练
