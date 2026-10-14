@@ -15,8 +15,20 @@ import logging
 import time
 from pathlib import Path
 from torch.utils.tensorboard import SummaryWriter
+import random, numpy as np
 
+def set_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    
 def main():
+    seed = config.seed
+    set_seed(seed)
+
     img_size = config.img_size
     patch_size = config.patch_size
     in_chans = config.in_chans

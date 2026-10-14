@@ -18,8 +18,22 @@ CIFAR10_CLASSES = [
 
 class Dataset(Dataset):
     def __init__(self, root, train, img_size, context_length, vocab_size):
-        self.transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
-        self.ds = datasets.CIFAR10(root=root, train=train, download=True, transform=self.transform)
+        self.transform_train = transforms.Compose(
+            [
+                transforms.Resize((img_size, img_size)), 
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+            ]
+        )
+        self.transform_test = transforms.Compose(
+            [
+                transforms.Resize((img_size, img_size)), 
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+            ]
+        )
+        self.ds = datasets.CIFAR10(root=root, train=train, download=True, transform=self.transform_train if train else self.transform_test)
         
         self.prompts = [f"a photo of a {name}" for name in CIFAR10_CLASSES]
         self.tokenizer = TextToeknizer(vocab_size, merges_path = merges_path)
