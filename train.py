@@ -139,12 +139,14 @@ def main(args):
 
         avg_loss = train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, args.precision)
         
+        train_acc = evaluate(model, train_loader, device, class_tokens)
+        
         acc = evaluate(model, test_loader, device, class_tokens)
         
         logging.info(
-            "Epoch %d/%d | loss=%.4f | acc=%.2f%% | lr=%.2e | time=%.1fs",
+            "Epoch %d/%d | loss=%.4f | train_acc=%.2f%% | test_acc=%.2f%% | lr=%.2e | time=%.1fs",
             epoch + 1, args.num_epochs,
-            avg_loss, acc * 100,
+            avg_loss, train_acc * 100, acc * 100,
             optimizer.param_groups[0]["lr"],
             time.perf_counter() - started,
         )
@@ -152,6 +154,7 @@ def main(args):
         step = epoch + 1
 
         writer.add_scalar("train/loss", avg_loss, step)
+        writer.add_scalar("train/accuracy", train_acc, step)
         writer.add_scalar("eval/accuracy", acc, step)
         writer.add_scalar(
             "train/lr", optimizer.param_groups[0]["lr"], step
