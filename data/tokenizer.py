@@ -95,6 +95,12 @@ class TextToeknizer():
         return text
 
 if __name__ == "__main__":
-    tokenizer = TextToeknizer(merges_path="/Users/mac/proj/clip-repr/model/bpe_simple_vocab_16e6.txt")
+    from pathlib import Path
+    from config import config
+
+    tokenizer = TextToeknizer(
+        vocab_size=config.vocab_size,
+        merges_path=Path(__file__).resolve().parents[1] / "model" / "bpe_simple_vocab_16e6.txt",
+    )
     # tokenizer.decode([585, 533, 13306])
     tokenizer.encode("aaaa it is unbelievable")

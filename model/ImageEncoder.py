@@ -53,7 +53,7 @@ class VIT(nn.Module):
         
         self.PatchEmbedding = PatchEmbedding(img_size, patch_size, in_chans, embed_dims)
         self.Transformer = Transformer(embed_dims, num_heads, hidden_dims, num_layers)
-        self.o_proj = nn.Linear(embed_dims, output_dims, bias=False)
+        self.o_proj = nn.Linear(embed_dims, output_dims, bias=False)    # 统一映射output_dims
         
     def forward(self,x):
         x = self.PatchEmbedding(x)  # (B, n_patches, embed_dims)

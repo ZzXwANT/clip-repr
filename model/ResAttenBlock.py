@@ -30,6 +30,6 @@ class ResAttenBlock(nn.Module):
     
 if __name__ == "__main__":
     x = torch.randn(2, 4, 8)
-    model = ResAttenBlock(embed_dims=8, num_heads=2, hidden_dims=16)
+    model = ResAttenBlock(embed_dims=8, num_heads=2, hidden_dims=16, mask=True)
     out = model(x)
     print(out.shape)

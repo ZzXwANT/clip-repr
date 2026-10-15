@@ -1,3 +1,5 @@
+# 这里保存了模型的参数
+
 class config:
     img_size = 32
     patch_size = 4 
@@ -9,13 +11,3 @@ class config:
     hidden_dims = 3072
     num_layers = 12
     output_dims = 512
-    
-    seed = 42
-    num_workers = 8
-    batch_size = 256
-    learning_rate = 3e-4
-    num_epochs = 100
-    weight_decay = 0.01  
-    resume = False
-    
-    warmup_epochs = 5 # 添加 warmup 稳定前期训练

@@ -39,4 +39,4 @@ class clip(nn.Module):
         return logits
     
     def l2_norm(self, input, dim=-1):
-        return input / torch.sqrt(torch.sum(input ** 2, dim=dim, keepdim=True))
+        return input / torch.sqrt(torch.sum(input ** 2, dim=dim, keepdim=True) + 1e-6)
