@@ -28,24 +28,13 @@ def set_seed(seed: int) -> None:
     torch.backends.cudnn.benchmark = False
     
 def main(args):
-    img_size = config.img_size
-    patch_size = config.patch_size
-    in_chans = config.in_chans
-    vocab_size = config.vocab_size
-    context_length = config.context_length
-    embed_dims = config.embed_dims
-    num_heads = config.num_heads
-    hidden_dims = config.hidden_dims
-    num_layers = config.num_layers
-    output_dims = config.output_dims
-    
     set_seed(args.seed)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # 数据
-    train_ds = Dataset(data_root, True, img_size, context_length, vocab_size)
-    test_ds = Dataset(data_root, False, img_size, context_length, vocab_size)
+    train_ds = Dataset(data_root, True, config.img_size, config.context_length, config.vocab_size)
+    test_ds = Dataset(data_root, False, config.img_size, config.context_length, config.vocab_size)
 
     train_loader = DataLoader(
         train_ds,
@@ -67,7 +56,13 @@ def main(args):
     )
 
     # 模型
-    model = clip(img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length, vocab_size)
+    model = clip(
+        config.img_size, config.patch_size, config.in_chans,
+        config.embed_dims_i, config.embed_dims_t, config.num_heads_i,
+        config.num_heads_t, config.hidden_dims_i, config.hidden_dims_t, 
+        config.num_layers, config.output_dims, config.context_length, 
+        config.vocab_size,
+    )
     
     model = model.to(device)
 

@@ -5,11 +5,12 @@ class config:
     patch_size = 32 
     in_chans = 3
     vocab_size = 49152 + 256
-    context_length = 16
+    context_length = 77
     embed_dims_i = 768
     embed_dims_t = 512
     num_heads_i = 12
     num_heads_t = 8
-    hidden_dims = 3072
+    hidden_dims_i = 3072
+    hidden_dims_t = 2048
     num_layers = 12
     output_dims = 512

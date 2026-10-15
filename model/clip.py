@@ -6,13 +6,15 @@ import numpy as np
 
 
 class clip(nn.Module):
-    def __init__(self, img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length, vocab_size):
+    def __init__(self, img_size, patch_size, in_chans, embed_dims_i, embed_dims_t,
+                 num_heads_i, num_heads_t, hidden_dims_i, hidden_dims_t,
+                 num_layers, output_dims, context_length, vocab_size):
         super().__init__()
         # encoder
-        self.img_encoder = VIT(img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims)  
-        self.text_encoder =  TextEncoder(embed_dims, num_heads, hidden_dims, num_layers, output_dims, context_length, attn_mask=True)
+        self.img_encoder = VIT(img_size, patch_size, in_chans, embed_dims_i, num_heads_i, hidden_dims_i, num_layers, output_dims)
+        self.text_encoder = TextEncoder(embed_dims_t, num_heads_t, hidden_dims_t, num_layers, output_dims, context_length, attn_mask=True)
         
-        self.text_embed = TextEmbedding(vocab_size, embed_dims)  
+        self.text_embed = TextEmbedding(vocab_size, embed_dims_t)
         
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))  # 原文 1/0.07 初始化 tau
         

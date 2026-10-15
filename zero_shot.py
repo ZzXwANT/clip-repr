@@ -48,8 +48,9 @@ def load_model(checkpoint_path, device):
     del checkpoint  # 减少资源占用
     model = clip(
         config.img_size, config.patch_size, config.in_chans,
-        config.embed_dims, config.num_heads, config.hidden_dims,
-        config.num_layers, config.output_dims, config.context_length, config.vocab_size,
+        config.embed_dims_i, config.embed_dims_t, config.num_heads_i,
+        config.num_heads_t, config.hidden_dims_i, config.hidden_dims_t, config.num_layers,
+        config.output_dims, config.context_length, config.vocab_size,
     )
     model.load_state_dict(state_dict, strict=True)
     return model.to(device).eval()

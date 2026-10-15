@@ -17,6 +17,7 @@ class PatchEmbedding(nn.Module):
             out_channels = self.embed_dims,
             kernel_size = self.patch_size,
             stride = self.patch_size,
+            bias=False,         # cifar-10训练时没禁bias
             )
         
     def forward(self, x):     # (B, C, img_size, img_size)
@@ -54,6 +55,7 @@ class VIT(nn.Module):
         self.PatchEmbedding = PatchEmbedding(img_size, patch_size, in_chans, embed_dims)
         self.Transformer = Transformer(embed_dims, num_heads, hidden_dims, num_layers)
         self.o_proj = nn.Linear(embed_dims, output_dims, bias=False)    # 统一映射output_dims
+        nn.init.normal_(self.o_proj.weight, std=scale)  # 对齐归一化
         
     def forward(self,x):
         x = self.PatchEmbedding(x)  # (B, n_patches, embed_dims)
@@ -75,4 +77,4 @@ if __name__ == "__main__":
     x = torch.randn(2, 3, 224, 224)
     patch_embedding = PatchEmbedding(224, 32, 3, 768)
     x = patch_embedding(x)
-    print(x.shape)  # (2, 49, 768)  
+    print(x.shape)  # (2, 49, 768)

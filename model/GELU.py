@@ -6,10 +6,11 @@ class GELU(nn.Module):
         super().__init__()
     
     def forward(self, x):
-        return 0.5 * x * (1 + torch.tanh(torch.sqrt(torch.tensor(2 / torch.pi)) * (x + 0.044715 * torch.pow(x, 3))))
+        # return 0.5 * x * (1 + torch.tanh(torch.sqrt(torch.tensor(2 / torch.pi)) * (x + 0.044715 * torch.pow(x, 3))))        # 公式原版
 
-        return x / (1 +torch.exp(-1.702 * x))   # fast 
+        # return x / (1 +torch.exp(-1.702 * x))   # fast
 
+        return x * torch.sigmoid(1.702 * x)       # faster
         
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

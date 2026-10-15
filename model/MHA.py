@@ -25,6 +25,11 @@ class MultiHeadAtten(nn.Module):
         # ])  
         
         self.o_proj = nn.Linear(self.embed_dims, self.embed_dims)   # （D, D）
+
+        # 对齐原版 nn.MultiheadAttention; 文本单独覆盖权重的初始化。
+        nn.init.xavier_uniform_(self.qkv.weight)
+        nn.init.zeros_(self.qkv.bias)
+        nn.init.zeros_(self.o_proj.bias)
         
     def forward(self, x):
         B, N, D = x.shape                  # D = embed_dims
