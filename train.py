@@ -67,10 +67,7 @@ def main(args):
     model = model.to(device)
 
     # 类别用于推理
-    class_tokens = torch.stack([
-        test_ds.encode_text(prompt)
-        for prompt in test_ds.prompts
-    ]).to(device)
+    class_tokens = test_ds.class_tokens.to(device)
     
     # record
     output_dir = Path(path) / "outputs"
@@ -132,10 +129,10 @@ def main(args):
     for epoch in range(start_epoch, args.num_epochs):
         started = time.perf_counter()
 
-        avg_loss = train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, args.precision)
+        avg_loss = train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, args.precision, class_tokens)
         
+        optimizer.zero_grad(set_to_none=True)
         train_acc = evaluate(model, train_loader, device, class_tokens)
-        
         acc = evaluate(model, test_loader, device, class_tokens)
         
         logging.info(
@@ -175,7 +172,7 @@ def main(args):
             torch.save(checkpoint, args.save_dir / "best.pt")
     writer.close()
     
-def train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, precision):
+def train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, precision, class_tokens):
     # 训练流程
     total_loss = 0.0
     total_samples = 0
@@ -189,7 +186,7 @@ def train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, pr
         labels = labels.to(device, non_blocking=True)
         # 根据 --precision 控制混合精度
         with torch.autocast(device.type, dtype=torch.bfloat16, enabled=precision == "bf16"):
-            logits = model(imgs, tokens)
+            logits = model(imgs, tokens, labels, class_tokens)
         # loss保持fp32
         loss = contrastive_loss(logits.float(), labels)
         loss.backward()
@@ -230,7 +227,7 @@ def evaluate(model, test_loader, device, class_tokens):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n", type=int, required=True, help="实验次数/备注")
+    parser.add_argument("--n", type=str, required=True, help="实验次数/备注")
     parser.add_argument("--save_dir", type=Path, required=True, help="模型保存路径")
     parser.add_argument("--resume", action="store_true", help="恢复模型、优化器和原学习率计划")
     parser.add_argument("--reset_scheduler", action="store_true", help="续训时按本次学习率和 warmup 重建调度器")
@@ -243,11 +240,6 @@ if __name__ == "__main__":
     parser.add_argument("--num_epochs", type=int, default=100)
     parser.add_argument("--warmup_epochs", type=int, default=5)
     args = parser.parse_args()
-    if args.resume and not (args.model_dir and (args.model_dir / "last.pt").is_file()): parser.error("续训时 --model_dir 必须指向包含 last.pt 的目录")
-    if (not args.resume or args.reset_scheduler) and not 0 <= args.warmup_epochs < args.num_epochs: parser.error("需要满足 0 <= warmup_epochs < num_epochs")
-    if args.batch_size <= 0 or args.learning_rate <= 0 or args.num_epochs <= 0: parser.error("batch_size、learning_rate 和 num_epochs 必须大于 0")
-    if args.num_workers < 0: parser.error("num_workers 不能小于 0")
-    if args.precision == "bf16" and not (torch.cuda.is_available() and torch.cuda.is_bf16_supported()): args.precision = "fp32"
 
     args.save_dir.mkdir(parents=True, exist_ok=True)
     (args.save_dir / "info.txt").write_text(
@@ -261,4 +253,6 @@ if __name__ == "__main__":
         f"reset_scheduler: {args.reset_scheduler}\n",
         encoding="utf-8",
     )
+    (args.save_dir / "config.py").write_bytes(Path("config.py").read_bytes())
+    
     main(args)

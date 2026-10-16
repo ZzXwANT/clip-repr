@@ -11,3 +11,5 @@ thumbs.db
 
 *.tar.gz
 outputs/
+.vscode/
+cifar-10-batches-py/

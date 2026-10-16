@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class MultiHeadAtten(nn.Module):
     def __init__(self, embed_dims, num_heads, mask=False):
@@ -30,8 +31,27 @@ class MultiHeadAtten(nn.Module):
         nn.init.xavier_uniform_(self.qkv.weight)
         nn.init.zeros_(self.qkv.bias)
         nn.init.zeros_(self.o_proj.bias)
-        
+    
+    # 用 SDPA 加速计算
     def forward(self, x):
+        B, N, D = x.shape
+
+        qkv = self.qkv(x).reshape(
+            B, N, 3, self.num_heads, self.head_dims
+        )
+        qkv = qkv.permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]   # (B, num_heads, N, head_dims)
+
+        score = F.scaled_dot_product_attention(
+            q, k, v,
+            dropout_p=0.0,
+            is_causal=self.mask,
+        )
+
+        score = score.transpose(1, 2).reshape(B, N, D)
+        return self.o_proj(score)
+    
+    def _forward(self, x):
         B, N, D = x.shape                  # D = embed_dims
         # (B, N, 3, num_heads, head_dims)   分多头 atten
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, self.head_dims)  

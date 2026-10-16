@@ -6,10 +6,18 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
 
-from config import config   # 需要导入save位置的模型参数
+# from config import config   # 需要导入save位置的模型参数
 from data.tokenizer import TextToeknizer
 from model.clip import clip
+import importlib.util
+from pathlib import Path
 
+def load_config(checkpoint: Path):
+    config_path = checkpoint.parent / "config.py"
+    spec = importlib.util.spec_from_file_location("saved_config", config_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.config
 
 def build_dataset(data_root):
     # 沿用训练时的尺寸和归一化参数，不做随机增强。
@@ -18,7 +26,7 @@ def build_dataset(data_root):
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
     ])
-    dataset = datasets.ImageFolder(data_root, transform=transform)
+    dataset = datasets.CIFAR10(data_root, transform=transform)
     return dataset, dataset.classes
 
 
@@ -78,7 +86,7 @@ def evaluate(model, zero_shot_loader, device, class_tokens, topk=1):
     return correct / total
 
 
-def main(args):
+def main(args, config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     dataset, class_names = build_dataset(args.data_root)
     class_tokens = build_class_tokens(class_names, args.template)
@@ -102,9 +110,11 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint", type=Path, required=True, help="train.py 保存的 best.pt 路径")
     parser.add_argument("--data_root", type=Path, required=True, help="评估图片目录：根目录/类别名/图片")
     parser.add_argument("--template", default="a photo of a {}", help="类别提示词模板，使用 {} 填入类别名")
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--topk", type=int, default=1, help="计算 Top-k 准确率，k 不得超过类别数")
     args = parser.parse_args()
+    
+    config = load_config(args.checkpoint)
 
-    main(args)
+    main(args, config)

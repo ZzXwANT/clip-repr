@@ -25,6 +25,7 @@ class TextEncoder(nn.Module):
             torch.randn(1, context_length, embed_dims)
         )
         nn.init.normal_(self.pos_embedding, mean=0.0, std=0.01) # 添加 std=0.01 
+        
         self.transformer = Transformer(embed_dims, num_heads, hidden_dims, num_layers, attn_mask, output_dims)
 
         # 对齐 OpenAI CLIP 文本塔的权重初始化。
@@ -38,13 +39,14 @@ class TextEncoder(nn.Module):
             nn.init.normal_(block.mlp[2].weight, std=proj_std)
         nn.init.normal_(self.text_proj.weight, std=attn_std)
         
-    def forward(self, x):
+    def forward(self, x, eot_idx):
         x = x + self.pos_embedding
-        x = self.transformer(x)
+        x = self.transformer(x)                  # [B, N, D]
+        batch_idx = torch.arange(x.shape[0], device=x.device)
+        x = x[batch_idx, eot_idx, :]             # [B, D]   # 提前取出 eot_idx 减少计算
         x = self.ln_final(x)
-        x = self.text_proj(x)
-        
-        return x
+        return self.text_proj(x)                 # [B, output_dims]
+    
 if __name__ == "__main__":
     TextEmbedding = TextEmbedding(8, 768)
     embeddings = TextEmbedding(torch.randint(8,(1, 8)))

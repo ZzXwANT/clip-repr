@@ -21,12 +21,14 @@ class Dataset(Dataset):
         # 数据增强
         self.transform_train = transforms.Compose(
             [
-                transforms.Resize((img_size, img_size)), 
+                transforms.RandomCrop(32, padding=4),
                 transforms.RandomHorizontalFlip(),
+                transforms.Resize((img_size, img_size)),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
             ]
         )
+        
         self.transform_test = transforms.Compose(
             [
                 transforms.Resize((img_size, img_size)), 
@@ -40,8 +42,8 @@ class Dataset(Dataset):
         self.tokenizer = TextToeknizer(vocab_size, merges_path = merges_path)
         self.context_length = context_length
         # 由于类别与tokenizer不变，提前缓存
-        self.tokens_list = torch.stack([
-            self.encode_text(text)
+        self.class_tokens = torch.stack([
+            self.preprocess_text(text)
             for text in self.prompts
         ])  # [10, 77]，torch.long
         
@@ -51,9 +53,9 @@ class Dataset(Dataset):
     def __getitem__(self, idx):
         image, label = self.ds[idx]
         
-        return image, self.tokens_list[label], label
+        return image, self.class_tokens[label], label
 
-    def encode_text(self, text):
+    def preprocess_text(self, text):
         # 文本处理
         input_text = '<|startoftext|> ' + text + ' <|endoftext|>'
         _, tokens = self.tokenizer.encode(input_text)   # eg: [424, 23, 124, ...]
