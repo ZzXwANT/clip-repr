@@ -1,6 +1,6 @@
 import torch
 
-def create_optimizer(model, learning_rate):
+def create_optimizer(model, learning_rate, weight_decay):
     decay_params = []
     no_decay_params = []
 
@@ -17,7 +17,7 @@ def create_optimizer(model, learning_rate):
 
     optimizer = torch.optim.AdamW(
         [
-            {'params': decay_params, 'weight_decay': 0.01},
+            {'params': decay_params, 'weight_decay': weight_decay},
             {'params': no_decay_params, 'weight_decay': 0.0},
         ],
         lr=learning_rate,

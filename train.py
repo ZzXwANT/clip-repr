@@ -87,7 +87,7 @@ def main(args):
     best_acc = -1.0
 
     # optimizer
-    optimizer = create_optimizer(model, args.learning_rate)
+    optimizer = create_optimizer(model, args.learning_rate, args.weight_decay)
 
     if args.resume:
         checkpoint = torch.load(
@@ -237,16 +237,19 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--learning_rate", type=float, default=3e-4)
+    parser.add_argument("--weight_decay", type=float, default=0.01)   # 添加weight_decay参数
     parser.add_argument("--num_epochs", type=int, default=100)
     parser.add_argument("--warmup_epochs", type=int, default=5)
     args = parser.parse_args()
 
+    args.save_dir = args.save_dir / f"exp{args.n}"
     args.save_dir.mkdir(parents=True, exist_ok=True)
     (args.save_dir / "info.txt").write_text(
         f"seed: {args.seed}\n"
         f"batch_size: {args.batch_size}\n"
         f"num_workers: {args.num_workers}\n"
         f"learning_rate: {args.learning_rate}\n"
+        f"weight_decay: {args.weight_decay}\n"
         f"num_epochs: {args.num_epochs}\n"
         f"warmup_epochs: {args.warmup_epochs}\n"
         f"precision: {args.precision}\n"
