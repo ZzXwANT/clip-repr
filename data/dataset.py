@@ -17,26 +17,47 @@ CIFAR10_CLASSES = [
 ]
 
 class Dataset(Dataset):
-    def __init__(self, root, train, img_size, context_length, vocab_size):
+    def __init__(self, root, train: bool, aug: bool, img_size, context_length, vocab_size):
         # 数据增强
-        self.transform_train = transforms.Compose(
+        self.transform_aug = transforms.Compose(
             [
-                transforms.RandomCrop(32, padding=4),
-                transforms.RandomHorizontalFlip(),
-                transforms.Resize((img_size, img_size)),
+                # 随机裁剪面积、宽高比和插值方式，输出尺寸保持固定。
+                transforms.RandomChoice([
+                    transforms.RandomResizedCrop(
+                        (img_size, img_size),
+                        scale=(0.4, 1.0),
+                        ratio=(3 / 4, 4 / 3),
+                        interpolation=interpolation,
+                    )
+                    for interpolation in (
+                        transforms.InterpolationMode.BILINEAR,
+                        transforms.InterpolationMode.BICUBIC,
+                    )
+                ]),
+                transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomApply([
+                    transforms.ColorJitter(
+                        brightness=0.32, contrast=0.32, saturation=0.32, hue=0.08,
+                    ),
+                ], p=0.8),
+                transforms.RandomGrayscale(p=0.2),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+                # 在标准化后的 Tensor 上用随机像素擦除一个区域。
+                transforms.RandomErasing(
+                    p=0.25, scale=(0.02, 0.33), ratio=(0.3, 3.3), value='random',
+                ),
             ]
         )
         
-        self.transform_test = transforms.Compose(
+        self.transform = transforms.Compose(
             [
                 transforms.Resize((img_size, img_size)), 
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
             ]
         )
-        self.ds = datasets.CIFAR10(root=root, train=train, download=True, transform=self.transform_train if train else self.transform_test)
+        self.ds = datasets.CIFAR10(root=root, train=train, download=True, transform=self.transform_aug if aug else self.transform)
         
         self.prompts = [f"a photo of a {name}" for name in CIFAR10_CLASSES]
         self.tokenizer = TextToeknizer(vocab_size, merges_path = merges_path)
@@ -67,8 +88,3 @@ class Dataset(Dataset):
             
         tokens += [0] * (self.context_length - len(tokens))
         return torch.tensor(tokens, dtype=torch.long)
-        
-    
-    
-
-    

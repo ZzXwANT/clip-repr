@@ -33,8 +33,9 @@ def main(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # 数据
-    train_ds = Dataset(data_root, True, config.img_size, config.context_length, config.vocab_size)
-    test_ds = Dataset(data_root, False, config.img_size, config.context_length, config.vocab_size)
+    train_ds = Dataset(data_root, True, True, config.img_size, config.context_length, config.vocab_size)
+    train_eval_ds = Dataset(data_root, True, False, config.img_size, config.context_length, config.vocab_size)
+    test_ds = Dataset(data_root, False, False, config.img_size, config.context_length, config.vocab_size)
 
     train_loader = DataLoader(
         train_ds,
@@ -44,6 +45,15 @@ def main(args):
         pin_memory=True,
         persistent_workers=args.num_workers > 0,
         drop_last=True,
+    )
+    trai_eval_loader = DataLoader(
+        train_eval_ds,
+        args.batch_size,
+        shuffle=False, 
+        num_workers=args.num_workers,
+        pin_memory=True,
+        persistent_workers=args.num_workers > 0,
+        drop_last=False,
     )
     test_loader = DataLoader(
         test_ds,
@@ -132,7 +142,7 @@ def main(args):
         avg_loss = train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, args.precision, class_tokens)
         
         optimizer.zero_grad(set_to_none=True)
-        train_acc = evaluate(model, train_loader, device, class_tokens)
+        train_acc = evaluate(model, trai_eval_loader, device, class_tokens)
         acc = evaluate(model, test_loader, device, class_tokens)
         
         logging.info(
