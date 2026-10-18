@@ -88,7 +88,7 @@ def main(args):
         format="%(asctime)s %(message)s",
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler(output_dir / f"train{args.n}.log", encoding="utf-8"),
+            logging.FileHandler(args.save_dir / f"train{args.n}.log", encoding="utf-8"),
         ],
     )
     logging.info("Training precision: %s", args.precision)
