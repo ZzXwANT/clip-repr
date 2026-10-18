@@ -1,0 +1,8 @@
+# Keep Colab's matched, CUDA-enabled torch/torchvision installation.
+# Install this file after the notebook's torch/torchvision import check.
+numpy>=1.26,<3
+Pillow>=10,<13
+tqdm>=4.67,<5
+regex>=2024.11
+ftfy>=6.3,<7
+tensorboard>=2.18,<3

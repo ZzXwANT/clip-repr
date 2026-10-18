@@ -9,6 +9,7 @@ from tqdm import tqdm
 # from config import config   # 需要导入save位置的模型参数
 from data.tokenizer import TextToeknizer
 from model.clip import clip
+from data.cc3m import image_transform
 import importlib.util
 from pathlib import Path
 
@@ -21,12 +22,12 @@ def load_config(checkpoint: Path):
 
 def build_dataset(data_root):
     # 沿用训练时的尺寸和归一化参数，不做随机增强。
-    transform = transforms.Compose([
+    transform = image_transform(config.img_size, train=False) if getattr(config, "clip_preprocess", False) else transforms.Compose([
         transforms.Resize((config.img_size, config.img_size)),
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
     ])
-    dataset = datasets.CIFAR10(data_root, transform=transform)
+    dataset = datasets.CIFAR10(data_root, train=False, download=True, transform=transform)
     return dataset, dataset.classes
 
 
@@ -108,7 +109,7 @@ def main(args, config):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", type=Path, required=True, help="train.py 保存的 best.pt 路径")
-    parser.add_argument("--data_root", type=Path, required=True, help="评估图片目录：根目录/类别名/图片")
+    parser.add_argument("--data_root", type=Path, required=True, help="CIFAR-10 测试集的下载/缓存目录")
     parser.add_argument("--template", default="a photo of a {}", help="类别提示词模板，使用 {} 填入类别名")
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--num_workers", type=int, default=4)

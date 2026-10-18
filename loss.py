@@ -1,4 +1,13 @@
 import torch.nn as nn
+import torch
+import torch.nn.functional as F
+
+
+def paired_contrastive_loss(logits):
+    """CC3M: 第 i 张图像与第 i 条 caption 配对，两个方向同等权重。"""
+    targets = torch.arange(logits.shape[0], device=logits.device)
+    logits = logits.float()
+    return (F.cross_entropy(logits, targets) + F.cross_entropy(logits.T, targets)) / 2
 
 def contrastive_loss(logits, label):
     # labels = torch.arange(logits.shape[0], device=logits.device) # 仅图文一对一

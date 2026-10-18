@@ -28,12 +28,16 @@ class clip(nn.Module):
         text_features = self.text_encoder(text_embeddings, eot_idx)
         return self.l2_norm(text_features)
     
-    def forward(self, imgs, tokens, labels, class_tokens):
+    def forward(self, imgs, tokens, labels=None, class_tokens=None):
         # (B, output_dims)
         img_features = self.encode_image(imgs)
-        class_features = self.encode_text(class_tokens)     # 做类型编码，减少重复计算
-        # text_features = self.encode_text(tokens)
-        text_features = class_features[labels]
+        if labels is None and class_tokens is None:
+            text_features = self.encode_text(tokens)
+        elif labels is not None and class_tokens is not None:
+            class_features = self.encode_text(class_tokens)
+            text_features = class_features[labels]
+        else:
+            raise ValueError("labels 和 class_tokens 必须同时提供")
         # (B, B)
         logits = img_features @ text_features.T * self.logit_scale.exp() # (bzI, bzT)
         
