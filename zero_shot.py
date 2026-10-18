@@ -59,6 +59,7 @@ def load_model(checkpoint_path, device):
         config.embed_dims_i, config.embed_dims_t, config.num_heads_i,
         config.num_heads_t, config.hidden_dims_i, config.hidden_dims_t, config.num_layers,
         config.output_dims, config.context_length, config.vocab_size,
+        image_dropout=getattr(config, "image_dropout", 0.0),
     )
     model.load_state_dict(state_dict, strict=True)
     return model.to(device).eval()

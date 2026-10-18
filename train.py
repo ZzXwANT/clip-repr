@@ -72,6 +72,7 @@ def main(args):
         config.num_heads_t, config.hidden_dims_i, config.hidden_dims_t, 
         config.num_layers, config.output_dims, config.context_length, 
         config.vocab_size,
+        image_dropout=getattr(config, "image_dropout", 0.0),
     )
     
     model = model.to(device)
@@ -92,6 +93,7 @@ def main(args):
         ],
     )
     logging.info("Training precision: %s", args.precision)
+    logging.info("Image dropout: %s", getattr(config, "image_dropout", 0.0))
 
     start_epoch = 0
     best_acc = -1.0
@@ -263,6 +265,7 @@ if __name__ == "__main__":
         f"num_epochs: {args.num_epochs}\n"
         f"warmup_epochs: {args.warmup_epochs}\n"
         f"precision: {args.precision}\n"
+        f"image_dropout: {getattr(config, 'image_dropout', 0.0)}\n"
         f"reset_scheduler: {args.reset_scheduler}\n",
         encoding="utf-8",
     )

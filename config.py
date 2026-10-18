@@ -14,3 +14,4 @@ class config:
     hidden_dims_t = 2048
     num_layers = 12
     output_dims = 512
+    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照
