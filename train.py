@@ -33,9 +33,11 @@ def main(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # 数据
-    train_ds = Dataset(data_root, True, True, config.img_size, config.context_length, config.vocab_size)
-    train_eval_ds = Dataset(data_root, True, False, config.img_size, config.context_length, config.vocab_size)
-    test_ds = Dataset(data_root, False, False, config.img_size, config.context_length, config.vocab_size)
+    train_ds = Dataset(args.data_root, True, True, config.img_size, args.context_length, config.vocab_size, dataset_name=args.dataset)
+
+    train_eval_ds = Dataset(args.data_root, True, False, config.img_size, args.context_length, config.vocab_size, dataset_name=args.dataset, class_tokens=train_ds.class_tokens)
+
+    test_ds = Dataset(args.data_root, False, False, config.img_size, args.context_length, config.vocab_size, dataset_name=args.dataset, class_tokens=train_ds.class_tokens)
 
     train_loader = DataLoader(
         train_ds,
@@ -70,7 +72,7 @@ def main(args):
         config.img_size, config.patch_size, config.in_chans,
         config.embed_dims_i, config.embed_dims_t, config.num_heads_i,
         config.num_heads_t, config.hidden_dims_i, config.hidden_dims_t, 
-        config.num_layers, config.output_dims, config.context_length, 
+        config.num_layers, config.output_dims, args.context_length,
         config.vocab_size,
         image_dropout=getattr(config, "image_dropout", 0.0),
     )
@@ -78,7 +80,7 @@ def main(args):
     model = model.to(device)
 
     # 类别用于推理
-    class_tokens = test_ds.class_tokens.to(device)
+    class_tokens = train_ds.class_tokens.to(device)
     
     # record
     output_dir = Path(path) / "outputs"
@@ -91,9 +93,12 @@ def main(args):
             logging.StreamHandler(),
             logging.FileHandler(args.save_dir / f"train{args.n}.log", encoding="utf-8"),
         ],
+        force=True,
     )
     logging.info("Training precision: %s", args.precision)
     logging.info("Image dropout: %s", getattr(config, "image_dropout", 0.0))
+    logging.info("Dataset: %s | cached class tokens: %s | context_length: %d",
+                 args.dataset, tuple(class_tokens.shape), args.context_length)
 
     start_epoch = 0
     best_acc = -1.0
@@ -148,10 +153,11 @@ def main(args):
         acc = evaluate(model, test_loader, device, class_tokens)
         
         logging.info(
-            "Epoch %d/%d | loss=%.4f | train_acc=%.2f%% | test_acc=%.2f%% | lr=%.2e | time=%.1fs",
+            "Epoch %d/%d | loss=%.4f | train_acc=%.2f%% | test_acc=%.2f%% | lr=%.2e | logit_scale=%.4f | time=%.1fs",
             epoch + 1, args.num_epochs,
             avg_loss, train_acc * 100, acc * 100,
             optimizer.param_groups[0]["lr"],
+            model.logit_scale.exp().item(),
             time.perf_counter() - started,
         )
         
@@ -230,7 +236,7 @@ def evaluate(model, test_loader, device, class_tokens):
             
             img_features = model.encode_image(imgs)
             logits = img_features @ class_features.T * scale
-            # [B, 10]
+            # [B, number of classes]
             preds = logits.argmax(dim=1)        # 贪心选择
             correct += (preds == labels).sum().item()
             total += labels.size(0)
@@ -239,6 +245,9 @@ def evaluate(model, test_loader, device, class_tokens):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", choices=("cifar10", "cifar100"), default="cifar10")
+    parser.add_argument("--data_root", type=Path, default=Path(data_root), help="CIFAR 数据下载/缓存目录")
+    parser.add_argument("--context_length", type=int, help="文本长度；CIFAR-100 默认至少 16，CIFAR-10 沿用 config")
     parser.add_argument("--n", type=str, required=True, help="实验次数/备注")
     parser.add_argument("--save_dir", type=Path, required=True, help="模型保存路径")
     parser.add_argument("--resume", action="store_true", help="恢复模型、优化器和原学习率计划")
@@ -248,16 +257,21 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--num_workers", type=int, default=8)
-    parser.add_argument("--learning_rate", type=float, default=3e-4)
+    parser.add_argument("--learning_rate", type=float, default=1e-4)
     parser.add_argument("--weight_decay", type=float, default=0.01)   # 添加weight_decay参数
     parser.add_argument("--num_epochs", type=int, default=100)
     parser.add_argument("--warmup_epochs", type=int, default=5)
     args = parser.parse_args()
+    if args.context_length is None:
+        args.context_length = max(config.context_length, 16) if args.dataset == "cifar100" else config.context_length
 
     args.save_dir = args.save_dir / f"exp{args.n}"
     args.save_dir.mkdir(parents=True, exist_ok=True)
     (args.save_dir / "info.txt").write_text(
         f"seed: {args.seed}\n"
+        f"dataset: {args.dataset}\n"
+        f"data_root: {args.data_root}\n"
+        f"context_length: {args.context_length}\n"
         f"batch_size: {args.batch_size}\n"
         f"num_workers: {args.num_workers}\n"
         f"learning_rate: {args.learning_rate}\n"
@@ -270,5 +284,7 @@ if __name__ == "__main__":
         encoding="utf-8",
     )
     (args.save_dir / "config.py").write_bytes(Path("config.py").read_bytes())
+    with (args.save_dir / "config.py").open("a", encoding="utf-8") as saved_config:
+        saved_config.write(f"\nconfig.dataset = {args.dataset!r}\nconfig.context_length = {args.context_length!r}\n")
     
     main(args)
