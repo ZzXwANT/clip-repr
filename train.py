@@ -7,6 +7,7 @@ import torch
 from torch.utils.data import DataLoader
 from config import config
 from data.dataset import Dataset
+from data.preprocess import BatchImagePreprocess
 
 import os
 path = os.path.dirname(os.path.abspath(__file__))
@@ -28,16 +29,31 @@ def set_seed(seed: int) -> None:
     torch.backends.cudnn.benchmark = False
     
 def main(args):
+    torch.set_num_threads(1)
     set_seed(args.seed)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    train_preprocess = eval_preprocess = None
+    if args.image_preprocess == "cuda":
+        train_preprocess = BatchImagePreprocess(config.img_size, args.dataset, aug=True).to(device)
+    if args.eval_preprocess == "cuda":
+        eval_preprocess = BatchImagePreprocess(config.img_size, args.dataset, aug=False).to(device)
     
     # 数据
-    train_ds = Dataset(args.data_root, True, True, config.img_size, args.context_length, config.vocab_size, dataset_name=args.dataset)
+    train_ds = Dataset(
+        args.data_root, True, True, config.img_size, args.context_length, config.vocab_size,
+        dataset_name=args.dataset, raw_images=args.image_preprocess == "cuda",
+    )
 
-    train_eval_ds = Dataset(args.data_root, True, False, config.img_size, args.context_length, config.vocab_size, dataset_name=args.dataset, class_tokens=train_ds.class_tokens)
+    train_eval_ds = Dataset(
+        args.data_root, True, False, config.img_size, args.context_length, config.vocab_size,
+        dataset_name=args.dataset, class_tokens=train_ds.class_tokens, raw_images=args.eval_preprocess == "cuda",
+    )
 
-    test_ds = Dataset(args.data_root, False, False, config.img_size, args.context_length, config.vocab_size, dataset_name=args.dataset, class_tokens=train_ds.class_tokens)
+    test_ds = Dataset(
+        args.data_root, False, False, config.img_size, args.context_length, config.vocab_size,
+        dataset_name=args.dataset, class_tokens=train_ds.class_tokens, raw_images=args.eval_preprocess == "cuda",
+    )
 
     train_loader = DataLoader(
         train_ds,
@@ -47,6 +63,8 @@ def main(args):
         pin_memory=True,
         persistent_workers=args.num_workers > 0,
         drop_last=True,
+        prefetch_factor=4 if args.num_workers > 0 else None,
+        in_order=False,
     )
     trai_eval_loader = DataLoader(
         train_eval_ds,
@@ -96,6 +114,7 @@ def main(args):
         force=True,
     )
     logging.info("Training precision: %s", args.precision)
+    logging.info("Image preprocessing: train=%s | eval=%s", args.image_preprocess, args.eval_preprocess)
     logging.info("Image dropout: %s", getattr(config, "image_dropout", 0.0))
     logging.info("Dataset: %s | cached class tokens: %s | context_length: %d",
                  args.dataset, tuple(class_tokens.shape), args.context_length)
@@ -146,11 +165,11 @@ def main(args):
     for epoch in range(start_epoch, args.num_epochs):
         started = time.perf_counter()
 
-        avg_loss = train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, args.precision, class_tokens)
+        avg_loss = train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, args.precision, class_tokens, train_preprocess)
         
         optimizer.zero_grad(set_to_none=True)
-        train_acc = evaluate(model, trai_eval_loader, device, class_tokens)
-        acc = evaluate(model, test_loader, device, class_tokens)
+        train_acc = evaluate(model, trai_eval_loader, device, class_tokens, eval_preprocess)
+        acc = evaluate(model, test_loader, device, class_tokens, eval_preprocess)
         
         logging.info(
             "Epoch %d/%d | loss=%.4f | train_acc=%.2f%% | test_acc=%.2f%% | lr=%.2e | logit_scale=%.4f | time=%.1fs",
@@ -190,9 +209,9 @@ def main(args):
             torch.save(checkpoint, args.save_dir / "best.pt")
     writer.close()
     
-def train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, precision, class_tokens):
+def train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, precision, class_tokens, image_preprocess=None):
     # 训练流程
-    total_loss = 0.0
+    total_loss = torch.zeros((), device=device)
     total_samples = 0
     model.train()
     for imgs, tokens, labels in tqdm(train_loader, desc=f"Epoch {epoch}"):
@@ -200,6 +219,8 @@ def train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, pr
         
         # pinned memory 配合 non_blocking=True 可以减少不必要的搬运同步
         imgs = imgs.to(device, non_blocking=True)
+        if image_preprocess is not None:
+            imgs = image_preprocess(imgs)
         tokens = tokens.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
         # 根据 --precision 控制混合精度
@@ -212,16 +233,16 @@ def train_one_epoch(model, optimizer, train_loader, device, scheduler, epoch, pr
         with torch.no_grad():
             model.logit_scale.clamp_(max=4.605170186)  # 原论文 ln(100) 温度约束
         total_samples += imgs.size(0)
-        total_loss += loss.item() * imgs.size(0)
+        total_loss += loss.detach() * imgs.size(0)
     
         scheduler.step()
         
-    return total_loss / total_samples
+    return total_loss.item() / total_samples
 
 @torch.no_grad()
-def evaluate(model, test_loader, device, class_tokens):
+def evaluate(model, test_loader, device, class_tokens, image_preprocess=None):
      # 推理评估
-    correct = 0
+    correct = torch.zeros((), dtype=torch.long, device=device)
     total = 0
     model.eval()
     
@@ -231,17 +252,19 @@ def evaluate(model, test_loader, device, class_tokens):
     
     with torch.no_grad():
         for imgs, _, labels in test_loader:
-            imgs = imgs.to(device)
-            labels = labels.to(device)
+            imgs = imgs.to(device, non_blocking=True)
+            if image_preprocess is not None:
+                imgs = image_preprocess(imgs)
+            labels = labels.to(device, non_blocking=True)
             
             img_features = model.encode_image(imgs)
             logits = img_features @ class_features.T * scale
             # [B, number of classes]
             preds = logits.argmax(dim=1)        # 贪心选择
-            correct += (preds == labels).sum().item()
+            correct += (preds == labels).sum()
             total += labels.size(0)
         
-    return correct / total
+    return correct.item() / total
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -257,6 +280,10 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--num_workers", type=int, default=8)
+    parser.add_argument("--image_preprocess", choices=("cpu", "cuda"), default="cpu",
+                        help="训练图像预处理设备；cuda 使用 Kornia")
+    parser.add_argument("--eval_preprocess", choices=("cpu", "cuda"), default="cuda",
+                        help="评估图像预处理设备，默认 cuda")
     parser.add_argument("--learning_rate", type=float, default=1e-4)
     parser.add_argument("--weight_decay", type=float, default=0.01)   # 添加weight_decay参数
     parser.add_argument("--num_epochs", type=int, default=100)
@@ -274,6 +301,8 @@ if __name__ == "__main__":
         f"context_length: {args.context_length}\n"
         f"batch_size: {args.batch_size}\n"
         f"num_workers: {args.num_workers}\n"
+        f"image_preprocess: {args.image_preprocess}\n"
+        f"eval_preprocess: {args.eval_preprocess}\n"
         f"learning_rate: {args.learning_rate}\n"
         f"weight_decay: {args.weight_decay}\n"
         f"num_epochs: {args.num_epochs}\n"

@@ -17,8 +17,9 @@ CIFAR_STATS = {
 
 class Dataset(Dataset):
     def __init__(self, root, train: bool, aug: bool, img_size, context_length, vocab_size,
-                 dataset_name="cifar10", class_tokens=None):
+                 dataset_name="cifar10", class_tokens=None, raw_images=False):
         self.dataset_name = dataset_name
+        self.raw_images = raw_images
         mean, std = CIFAR_STATS[dataset_name]
         # 数据增强
         self.transform_aug = transforms.Compose(
@@ -61,7 +62,10 @@ class Dataset(Dataset):
         )
         self.transform = self.transform_aug if aug else self.transform
         dataset_class = datasets.CIFAR100 if dataset_name == "cifar100" else datasets.CIFAR10
-        self.ds = dataset_class(root=root, train=train, download=True, transform=self.transform)
+        self.ds = dataset_class(
+            root=root, train=train, download=True,
+            transform=None if raw_images else self.transform,
+        )
         self.classes = list(self.ds.classes)
         self.prompts = [f"a photo of a {name.replace('_', ' ')}" for name in self.classes]
         self.tokenizer = TextToeknizer(vocab_size, merges_path = merges_path)
@@ -79,7 +83,13 @@ class Dataset(Dataset):
         return len(self.ds)
 
     def __getitem__(self, idx):
-        image, label = self.ds[idx]
+        if self.raw_images:
+            # 直接读取 CIFAR 的内存数组，跳过 PIL 和逐图 CPU 增强。
+            # DataLoader 合并为 [B, 3, 32, 32] uint8，交给主进程在 GPU 处理。
+            image = torch.from_numpy(self.ds.data[idx]).permute(2, 0, 1)
+            label = self.ds.targets[idx]
+        else:
+            image, label = self.ds[idx]
         
         return image, self.class_tokens[label], label
 
