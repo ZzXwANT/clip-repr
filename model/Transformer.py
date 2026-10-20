@@ -3,7 +3,7 @@ from .ResAttenBlock import ResAttenBlock
 from .LayerNorm import LayerNorm    
 
 class Transformer(nn.Module):
-    def __init__(self, embed_dims, num_heads, hidden_dims, num_layers, mask=False, output_dims=512):
+    def __init__(self, embed_dims, num_heads, hidden_dims, num_layers, mask=False, output_dims=512, dropout=0.0):
         super().__init__()
         self.embed_dims = embed_dims
         self.num_heads = num_heads
@@ -12,7 +12,7 @@ class Transformer(nn.Module):
         self.mask = mask
         self.output_dims = output_dims
         self.layes = nn.ModuleList(
-            ResAttenBlock(embed_dims=self.embed_dims, num_heads=self.num_heads, hidden_dims=self.hidden_dims, mask = self.mask)
+            ResAttenBlock(embed_dims=self.embed_dims, num_heads=self.num_heads, hidden_dims=self.hidden_dims, mask=self.mask, dropout=dropout)
             for _ in range(self.num_layers)         
         )
         

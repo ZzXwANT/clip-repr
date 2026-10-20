@@ -102,6 +102,7 @@ def build_parser():
     parser.add_argument("--cache-dir", type=Path, help="每个加载进程缓存当前 tar 的本地目录")
     parser.add_argument("--resume", type=Path, help="恢复本入口生成的 last.pt")
     parser.add_argument("--model-config", type=Path, help="可选 Python 配置文件，定义 config 类")
+    parser.add_argument("--image-dropout", type=float, help="默认沿用模型配置；续训沿用 checkpoint")
     parser.add_argument("--context-length", type=int, default=77)
     parser.add_argument("--precision", choices=("auto", "fp32", "bf16"), default="auto")
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
@@ -122,6 +123,7 @@ def build_parser():
 
 
 def main(args):
+    torch.set_num_threads(1)
     if (args.batch_size < 2 or args.num_workers < 0 or args.context_length < 2
             or args.shuffle_buffer < 0 or args.val_samples < 2):
         raise ValueError("batch-size、context-length、val-samples >= 2；workers 和 buffer >= 0")
@@ -164,6 +166,15 @@ def main(args):
     source_config = runpy.run_path(str(args.model_config))["config"] if args.model_config else config
     model_config = {key: getattr(source_config, key) for key in MODEL_FIELDS}
     model_config["context_length"] = args.context_length
+    checkpoint = torch.load(args.resume, map_location="cpu", weights_only=True) if args.resume else None
+    if checkpoint is not None:
+        # 旧 CC3M checkpoint 没有 dropout 配置，其实际值为 0。
+        checkpoint["model_config"].setdefault("image_dropout", 0.0)
+    model_config["image_dropout"] = (
+        args.image_dropout if args.image_dropout is not None else
+        checkpoint["model_config"]["image_dropout"] if checkpoint is not None else
+        getattr(source_config, "image_dropout", 0.0)
+    )
     train_shards, val_shards = split_shards(args.data_root, args.val_root, args.val_shards, args.seed)
     manifest = {
         "train": shard_manifest(train_shards, args.data_root),
@@ -183,18 +194,22 @@ def main(args):
     model = clip(**model_config).to(device)
     optimizer = create_optimizer(model, args.learning_rate, args.weight_decay)
     global_step, data_epoch, best_loss = 0, 0, math.inf
-    checkpoint = None
     resume_settings = {k: getattr(args, k) for k in (
         "batch_size", "total_steps", "warmup_steps", "seed", "precision", "shuffle_buffer",
         "learning_rate", "weight_decay", "val_samples",
     )}
     if args.resume:
-        checkpoint = torch.load(args.resume, map_location="cpu", weights_only=True)
         if checkpoint["model_config"] != model_config or checkpoint["manifest"] != manifest:
             raise ValueError("恢复失败：模型配置或数据分片清单发生变化")
         if checkpoint["resume_settings"] != resume_settings:
             raise ValueError("恢复时训练参数必须与原训练一致；检查 batch、步数计划、精度、学习率和验证池大小")
         model.load_state_dict(checkpoint["model"])
+        # 旧版把 logit_scale 放在 no_decay 组的首位；恢复相同顺序以匹配 Adam 状态。
+        if len(checkpoint["optimizer"]["param_groups"][0]["params"]) == len(optimizer.param_groups[0]["params"]) - 1:
+            optimizer.param_groups[0]["params"] = [
+                p for p in optimizer.param_groups[0]["params"] if p is not model.logit_scale
+            ]
+            optimizer.param_groups[1]["params"].insert(0, model.logit_scale)
         scheduler = restore_scheduler(optimizer, checkpoint["scheduler"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         global_step, best_loss = checkpoint["global_step"], checkpoint["best_loss"]
@@ -226,6 +241,11 @@ def main(args):
         logging.info("GPU=%s | VRAM=%.1f GiB", props.name, props.total_memory / 2**30)
     logging.info("%s；physical batch=%d，每步负样本来自此 batch",
                  "恢复已有 CC3M checkpoint" if args.resume else "从头训练", args.batch_size)
+    logging.info("image_dropout=%.3g | AdamW betas=%s eps=%g | logit_scale weight_decay=%g",
+                 model_config["image_dropout"], optimizer.param_groups[0]["betas"],
+                 optimizer.param_groups[0]["eps"],
+                 next(group["weight_decay"] for group in optimizer.param_groups
+                      if any(p is model.logit_scale for p in group["params"])))
     target_step = min(args.total_steps, global_step + args.stop_after_steps) if args.stop_after_steps else args.total_steps
     if global_step >= target_step:
         logging.info("已达到目标步数")

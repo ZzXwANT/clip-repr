@@ -8,10 +8,10 @@ import numpy as np
 class clip(nn.Module):
     def __init__(self, img_size, patch_size, in_chans, embed_dims_i, embed_dims_t,
                  num_heads_i, num_heads_t, hidden_dims_i, hidden_dims_t,
-                 num_layers, output_dims, context_length, vocab_size):
+                 num_layers, output_dims, context_length, vocab_size, image_dropout=0.0):
         super().__init__()
         # encoder
-        self.img_encoder = VIT(img_size, patch_size, in_chans, embed_dims_i, num_heads_i, hidden_dims_i, num_layers, output_dims)
+        self.img_encoder = VIT(img_size, patch_size, in_chans, embed_dims_i, num_heads_i, hidden_dims_i, num_layers, output_dims, dropout=image_dropout)
         self.text_encoder = TextEncoder(embed_dims_t, num_heads_t, hidden_dims_t, num_layers, output_dims, context_length, attn_mask=True)
         
         self.text_embed = TextEmbedding(vocab_size, embed_dims_t)

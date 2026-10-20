@@ -10,7 +10,7 @@ def create_optimizer(model, learning_rate, weight_decay):
 
         param_name = name.split('.')[-1]
 
-        if param_name in ('bias', 'gamma', 'beta', 'logit_scale'):
+        if param_name in ('bias', 'gamma', 'beta'): # 'logit_scale'
             no_decay_params.append(param)
         else:
             decay_params.append(param)
@@ -21,6 +21,8 @@ def create_optimizer(model, learning_rate, weight_decay):
             {'params': no_decay_params, 'weight_decay': 0.0},
         ],
         lr=learning_rate,
+        betas=(0.9, 0.98),      # open_clip
+        eps=1e-6,
     )
     
     return optimizer

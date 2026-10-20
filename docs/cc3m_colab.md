@@ -1,18 +1,20 @@
 # CC3M / Colab A100
 
-本分支保留 `train.py` 的 CIFAR-10 入口，新增 `train_cc3m.py`，用于从头训练现有 ViT-B/32 风格的 CLIP。默认分辨率 224、文本长度 77、逐条 caption 编码、batch 内双向配对交叉熵。新实验不会自动加载旧权重。
+本分支保留 `train.py` 的 CIFAR-10/100 入口，使用 `train_cc3m.py` 从头训练现有 ViT-B/32 风格的 CLIP。默认分辨率 224、文本长度 77、每 512 条 caption 批量分词、batch 内双向配对交叉熵。新实验不会自动加载旧权重。
+
+已合入 main 的模型、dropout 和 AdamW 更新。新训练默认读取 `config.py` 的 `image_dropout=0.1`，也可通过 `--image-dropout` 覆盖；AdamW 使用 betas=(0.9, 0.98)、eps=1e-6，沿用当前 main 对 logit_scale 施加 weight decay 的设置。CIFAR 的 GPU 增强仍由 `train.py` 使用；CC3M 保留自身的裁剪和 CLIP 归一化。
 
 ## 不推送 GitHub 也能使用
 
 在本地项目根目录执行：
 
 ```bash
-python scripts/export_colab.py
+python scripts/export_colab.py --output /tmp/clip-repr-colab.zip
 ```
 
 输出 `/tmp/clip-repr-colab.zip`，包含 Git 已跟踪文件及未被忽略的新文件，并使用文件当前内容，因此未提交的修改也会打包。不会包含被忽略的数据、outputs 或 `.git`。将此 ZIP 从当前机器下载到电脑。
 
-把 `notebooks/cc3m_colab.ipynb` 上传到 Colab，选择 A100，然后按顺序运行。Notebook 会要求上传上述 ZIP 并挂载 Google Drive。依赖文件 `requirements-colab.txt` 沿用 Colab 自带的 CUDA PyTorch/torchvision，避免用服务器上的固定版本替换它们。
+把 `notebooks/cc3m_colab.ipynb` 上传到 Colab，选择 A100，然后按顺序运行。更新 Drive 中的 `clip-repr` 项目目录；若该目录没有训练入口，Notebook 会要求上传上述 ZIP 并使用解压后的本地代码。依赖文件 `requirements-colab.txt` 沿用 Colab 自带的 CUDA PyTorch/torchvision。
 
 ## 数据格式
 
@@ -39,23 +41,25 @@ python -m data.cc3m /content/drive/MyDrive/cc3m --limit 10
 
 ## 训练
 
-Notebook 中修改 `DATA_ROOT` 和实验名即可；先跑独立的 10 步短测，观察有限 loss、峰值显存和 samples/s，再开始正式训练。
+Notebook 沿用提供的路径和训练参数，默认使用新实验名 `cc3m_a100_02`、`RESUME=False`。先跑独立的 100 步短测，观察有限 loss、峰值显存和 samples/s，再开始正式训练。
 
 等价命令：
 
 ```bash
 python train_cc3m.py \
-  --data-root /content/drive/MyDrive/cc3m \
-  --save-dir /content/runs/cc3m_a100_01 \
-  --drive-save-dir /content/drive/MyDrive/clip-repr-runs/cc3m_a100_01 \
+  --data-root /content/drive/MyDrive/datasets/cc3m \
+  --val-root /content/drive/MyDrive/datasets/cc3m_val \
+  --save-dir /content/runs/cc3m_a100_02 \
+  --drive-save-dir /content/drive/MyDrive/clip-repr-runs/cc3m_a100_02 \
   --cache-dir /content/cc3m-cache \
   --device cuda --precision bf16 --context-length 77 \
-  --batch-size 128 --num-workers 2 \
+  --batch-size 512 --num-workers 10 \
+  --learning-rate 3e-4 --weight-decay 0.1 \
   --total-steps 30000 --warmup-steps 1000 \
   --save-every 500 --eval-every 1000 --val-samples 1024
 ```
 
-128 是初始物理 batch，A100 上能否增大需要实测。每步负样本集合来自当前 batch；普通梯度累积不等价于扩大这个集合。日志显示实际使用的学习率、梯度范数、峰值显存和吞吐量，TensorBoard 同步到 Drive。
+Notebook 使用已跑过的物理 batch=512、workers=10；命令行入口仍允许覆盖这些参数。每步负样本集合来自当前 batch；普通梯度累积不等价于扩大这个集合。启动日志显示实际 dropout 和 AdamW 参数，训练日志显示学习率、峰值显存和吞吐量，TensorBoard 另记录梯度范数并同步到 Drive。
 
 每次迭代遍历分配给各 worker 的分片，打乱分片和压缩样本缓冲；遍历结束后重新打乱继续，直到达到 `total-steps`。它不是 epoch 数，也不根据名义上的 CC3M 样本数推测步数。每个 worker 丢弃末尾不足一个 batch 的样本，batch 至少为 2。
 
@@ -77,21 +81,30 @@ Notebook 中则将 `RESUME=True`。实验名、模型、分片相对路径与大
 
 恢复优化器和学习率进度后，数据从下一次分片打乱开始；不恢复 worker 预取队列与样本游标，部分样本可能重复。已有 CIFAR-10 checkpoint 的文本位置编码长度不同，也缺少本入口的恢复元数据，不能直接作为 CC3M 断点。
 
+旧 CC3M checkpoint 可继续恢复：缺失的 dropout 按原值 0 处理，保留旧版 logit_scale 参数分组以及保存的 AdamW 超参数。换代码后续训不会自动改成新的优化器配置；要验证当前 main 的配置，请使用新实验名从头训练。
+
 可以通过 `--stop-after-steps 10` 限制一次会话的更新次数，仍保留完整 `total-steps` 学习率计划。到达会话限制时评估并保存。中断或崩溃后恢复最近成功保存的 checkpoint，最多损失最近一次保存之后的训练。
 
 ## 评估与验证
 
 验证使用固定分片顺序、固定前缀候选池（默认最多 1024 个有效图文对）。两个方向分别对整个池计算 loss 与 Recall@1/5/10，日志记录实际候选数；不同候选数的指标不可直接比较，也不代表在整个 CC3M 上的检索结果。该评估假设索引一一配对，不额外合并重复 caption 的正样本。
 
-`zero_shot.py` 使用 CIFAR-10 测试集。CC3M 保存的 `config.py` 标记了 CLIP 预处理；旧配置仍使用原来的 CIFAR-10 归一化：
+`zero_shot.py` 支持 CIFAR-10/100 测试集。CC3M 保存的 `config.py` 标记了 CLIP 预处理；CIFAR 模型继续使用其训练数据的归一化。切换目标数据集不改变模型的归一化：
 
 ```bash
 python zero_shot.py \
-  --checkpoint /content/drive/MyDrive/clip-repr-runs/cc3m_a100_01/best.pt \
-  --data_root /content/cifar10
+  --dataset cifar100 \
+  --checkpoint /content/drive/MyDrive/clip-repr-runs/cc3m_a100_02/best.pt \
+  --data_root /content/data
 ```
 
 本地合成数据验证：
+
+分词优化只需要更新 `data/tokenizer.py` 和 `data/cc3m.py`。各 worker 在 CPU 上按最多 512 条 caption 批量生成 token 张量，仍逐条输出图文对供原 DataLoader 组 batch。分词批量大小不改变模型的 batch size；不需要修改训练命令或模型权重。
+
+BPE 使用每个 worker 最多 32768 个普通词的 LRU 缓存，批内重复 caption 只编码一次。token ID、SOT/EOT、截断和 padding 规则与旧版一致，现有 checkpoint 可继续使用。文本批处理阶段只额外缓冲压缩样本，图像仍逐条解码，不缓存 512 张完整图片。此优化不涉及 tar 异步预取，也不减少文本编码器的计算量。
+
+将两个文件替换到 Colab 项目后，需从已保存的 checkpoint 重新启动训练进程才会生效；不需要重新下载数据或重新安装依赖。不要在训练进程及其 worker 仍然运行时替换这两个文件，避免不同 worker 加载到不同版本。
 
 ```bash
 OMP_NUM_THREADS=2 python -m unittest discover -s tests -v

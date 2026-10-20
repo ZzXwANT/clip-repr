@@ -6,6 +6,7 @@ staging keeps at most one shard per active iterator, rather than copying all CC3
 import argparse
 from contextlib import contextmanager
 from io import BytesIO
+from itertools import islice
 import json
 import logging
 from pathlib import Path
@@ -42,14 +43,7 @@ def image_transform(img_size, train):
 
 
 def tokenize_caption(tokenizer, caption, context_length):
-    # Insert special tokens separately: literal special-token strings in captions
-    # must not replace the final EOT used by encode_text's argmax pooling.
-    sot = tokenizer.encoder["<|startoftext|>"]
-    eot = tokenizer.encoder["<|endoftext|>"]
-    _, ids = tokenizer.encode(caption)
-    ids = [i for i in ids if i not in (sot, eot)][:context_length - 2]
-    ids = [sot, *ids, eot]
-    return torch.tensor(ids + [0] * (context_length - len(ids)), dtype=torch.long)
+    return tokenizer.tokenize_batch([caption], context_length)[0]
 
 
 def discover_shards(root):
@@ -107,7 +101,7 @@ def tar_samples(path):
             yield current_key, sample
 
 
-def decode_sample(sample):
+def decode_caption(sample):
     if "__error__" in sample:
         raise ValueError(sample["__error__"])
     caption = sample.get("txt", b"").decode("utf-8").strip()
@@ -116,12 +110,21 @@ def decode_sample(sample):
         caption = metadata.get("caption") or metadata.get("text") or ""
     if not isinstance(caption, str) or not caption.strip():
         raise ValueError("missing/empty caption (.txt or JSON caption/text)")
+    return caption.strip()
+
+
+def decode_image(sample):
     image_bytes = next((sample[e] for e in sorted(IMAGE_EXTENSIONS) if e in sample), None)
     if image_bytes is None:
         raise ValueError("missing image")
     with Image.open(BytesIO(image_bytes)) as image:
         image = image.convert("RGB")
-    return image, caption.strip()
+    return image
+
+
+def decode_sample(sample):
+    caption = decode_caption(sample)
+    return decode_image(sample), caption
 
 
 @contextmanager
@@ -153,13 +156,16 @@ def buffered_shuffle(source, size, rng):
 
 class CC3MDataset(IterableDataset):
     def __init__(self, shards, img_size=224, context_length=77, vocab_size=49408,
-                 train=True, shuffle_buffer=512, seed=42, cache_dir=None):
+                 train=True, shuffle_buffer=512, seed=42, cache_dir=None, tokenizer_batch_size=512):
         if context_length < 2 or shuffle_buffer < 0:
             raise ValueError("context_length >= 2 且 shuffle_buffer >= 0")
+        if not isinstance(tokenizer_batch_size, int) or tokenizer_batch_size < 1:
+            raise ValueError("tokenizer_batch_size must be a positive integer")
         self.shards = list(map(Path, shards))
         self.context_length, self.vocab_size = context_length, vocab_size
         self.train, self.shuffle_buffer, self.seed = train, shuffle_buffer, seed
         self.cache_dir = cache_dir
+        self.tokenizer_batch_size = tokenizer_batch_size
         self.transform = image_transform(img_size, train)
         self.epoch = 0
 
@@ -190,18 +196,38 @@ class CC3MDataset(IterableDataset):
         if self.train and self.shuffle_buffer:
             samples = buffered_shuffle(samples, self.shuffle_buffer, rng)
         good = bad = 0
+        def skipped(shard_name, key, exc):
+            nonlocal bad
+            bad += 1
+            if bad <= 5:
+                logging.warning("跳过 %s:%s: %s", shard_name, key, exc)
+
         try:
-            for shard_name, key, sample in samples:
-                try:
-                    image, caption = decode_sample(sample)
-                except (ValueError, TypeError, AttributeError, OSError,
-                        UnidentifiedImageError, Image.DecompressionBombError) as exc:
-                    bad += 1
-                    if bad <= 5:
-                        logging.warning("跳过 %s:%s: %s", shard_name, key, exc)
-                    continue
-                good += 1
-                yield self.transform(image), tokenize_caption(tokenizer, caption, self.context_length)
+            while True:
+                chunk = list(islice(samples, self.tokenizer_batch_size))
+                if not chunk:
+                    break
+                entries, captions = [], []
+                for shard_name, key, sample in chunk:
+                    try:
+                        caption = decode_caption(sample)
+                    except (ValueError, TypeError, AttributeError, OSError) as exc:
+                        skipped(shard_name, key, exc)
+                        continue
+                    entries.append((shard_name, key, sample))
+                    captions.append(caption)
+                tokens = tokenizer.tokenize_batch(captions, self.context_length)
+                for (shard_name, key, sample), row in zip(entries, tokens):
+                    try:
+                        image = decode_image(sample)
+                    except (ValueError, TypeError, OSError, UnidentifiedImageError,
+                            Image.DecompressionBombError) as exc:
+                        skipped(shard_name, key, exc)
+                        continue
+                    good += 1
+                    # Only compressed samples are buffered. Decode and transform
+                    # each image immediately before yielding, as in the old reader.
+                    yield self.transform(image), row
         finally:
             logging.info("CC3M worker=%d pass=%d valid=%d skipped=%d",
                          worker_id, self.epoch, good, bad)

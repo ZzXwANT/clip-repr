@@ -1,4 +1,5 @@
 from .bytes_to_unicode import bytes_to_unicode
+from collections import OrderedDict
 import regex as re
 import ftfy
 import html
@@ -21,7 +22,11 @@ def whitespace_clean(text):
     return text.strip()
 
 class TextToeknizer():
-    def __init__(self,vocab_size, merges_path):
+    def __init__(self,vocab_size, merges_path, cache_size=32768):
+        if not isinstance(cache_size, int) or cache_size < 0:
+            raise ValueError("cache_size must be a non-negative integer")
+        self.cache_size = cache_size
+        self._bpe_cache = OrderedDict()
         with open(merges_path, "r", encoding="utf-8") as f:
             merges = f.read().split("\n")
         merges = merges[1:vocab_size-256-2+1 - 256]        # 多 *</w>
@@ -46,6 +51,10 @@ class TextToeknizer():
     def bpe(self, word):
         if word in self.cache:
             return [self.cache[word]]
+        if word in self._bpe_cache:
+            self._bpe_cache.move_to_end(word)
+            # Keep cached pieces immutable; callers may modify returned lists.
+            return list(self._bpe_cache[word])
         tokens = list(word[:-1]) + [word[-1] + '</w>']        
         
         while True:
@@ -55,7 +64,7 @@ class TextToeknizer():
                 if pair in self.bpe_ranks
             ]
             if not candidates:
-                return tokens
+                break
             
             best_pair = min(candidates, key=lambda pair: self.bpe_ranks[pair])
             idxs = pairs_with_idx[best_pair]
@@ -73,7 +82,12 @@ class TextToeknizer():
             tokens = new_tokens
             
             if len(tokens) == 1:
-                return tokens
+                break
+        if self.cache_size:
+            self._bpe_cache[word] = tuple(tokens)
+            if len(self._bpe_cache) > self.cache_size:
+                self._bpe_cache.popitem(last=False)
+        return tokens
     
     def encode(self, text):
         # gpt-2 预处理
@@ -87,6 +101,41 @@ class TextToeknizer():
                 bpe_tokens.append(self.encoder[token])
             
         return bpe_text, bpe_tokens
+
+    def encode_batch(self, texts):
+        """Encode captions in order, encoding identical captions only once per batch."""
+        if isinstance(texts, str):
+            raise TypeError("encode_batch expects an iterable of strings, not one string")
+        unique = {}
+        result = []
+        for text in texts:
+            if not isinstance(text, str):
+                raise TypeError("each caption must be a string")
+            if text not in unique:
+                unique[text] = self.encode(text)
+            pieces, ids = unique[text]
+            result.append((pieces.copy(), ids.copy()))
+        return result
+
+    def tokenize_batch(self, texts, context_length=77):
+        """Return [batch, context_length] int64 tokens, including SOT/EOT and padding.
+
+        Supports 512 captions or any other batch size. BPE rules and IDs are
+        unchanged, so existing model checkpoints remain compatible.
+        """
+        import torch
+
+        if not isinstance(context_length, int) or context_length < 2:
+            raise ValueError("context_length must be an integer >= 2")
+        sot = self.encoder['<|startoftext|>']
+        eot = self.encoder['<|endoftext|>']
+        rows = []
+        for _, ids in self.encode_batch(texts):
+            ids = [i for i in ids if i not in (sot, eot)][:context_length - 2]
+            row = [sot, *ids, eot]
+            rows.append(row + [0] * (context_length - len(row)))
+        # One tensor construction for the entire batch, including empty batches.
+        return torch.tensor(rows, dtype=torch.long).reshape(len(rows), context_length)
     
     def decode(self, tokens):
         word_unic = ''.join(self.decoder[token] for token in tokens)

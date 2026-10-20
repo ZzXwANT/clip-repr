@@ -41,7 +41,7 @@ class PatchEmbedding(nn.Module):
         return linear(patches)
     
 class VIT(nn.Module):
-    def __init__(self, img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims):
+    def __init__(self, img_size, patch_size, in_chans, embed_dims, num_heads, hidden_dims, num_layers, output_dims, dropout=0.0):
         super().__init__()
         scale = embed_dims ** -0.5  # 对齐原版的缩放randn
         self.cls_token = nn.Parameter(scale * torch.randn(1, 1, embed_dims))
@@ -53,7 +53,7 @@ class VIT(nn.Module):
         self.ln_post = LayerNorm(embed_dims)
         
         self.PatchEmbedding = PatchEmbedding(img_size, patch_size, in_chans, embed_dims)
-        self.Transformer = Transformer(embed_dims, num_heads, hidden_dims, num_layers)
+        self.Transformer = Transformer(embed_dims, num_heads, hidden_dims, num_layers, dropout=dropout)
         self.o_proj = nn.Linear(embed_dims, output_dims, bias=False)    # 统一映射output_dims
         nn.init.normal_(self.o_proj.weight, std=scale)  # 对齐归一化
         

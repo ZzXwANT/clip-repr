@@ -1,0 +1,13 @@
+(clip) root@autodl-container-612d499cae-aaa6e3a4:~/proj/clip-repr main$ python zero_shot.py \
+  --dataset cifar10 \
+  --checkpoint ~/autodl-tmp/model/cifar-100_vit-base-224-32/exp1_dropout/best.pt \
+  --data_root ./data \
+  --batch_size 512 \
+  --num_workers 10
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+Device: cuda | dataset: cifar10 | classes: 10 | images: 10000
+Zero-shot: 100%|
+Top-1 accuracy: 11.25%
+
+拿cifar-100训练的模型（cifar-100_vit-base-224-32/exp1_dropout train_acc:100% eval_acc:65% 过拟合模型）在cifar-10上做zero_shot

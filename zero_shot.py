@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 # from config import config   # 需要导入save位置的模型参数
 from data.tokenizer import TextToeknizer
+from data.dataset import CIFAR_STATS
 from model.clip import clip
 from data.cc3m import image_transform
 import importlib.util
@@ -20,14 +21,16 @@ def load_config(checkpoint: Path):
     spec.loader.exec_module(module)
     return module.config
 
-def build_dataset(data_root):
+def build_dataset(data_root, dataset_name="cifar10"):
     # 沿用训练时的尺寸和归一化参数，不做随机增强。
+    mean, std = CIFAR_STATS[getattr(config, "dataset", "cifar10")]
     transform = image_transform(config.img_size, train=False) if getattr(config, "clip_preprocess", False) else transforms.Compose([
         transforms.Resize((config.img_size, config.img_size)),
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+        transforms.Normalize(mean, std),
     ])
-    dataset = datasets.CIFAR10(data_root, train=False, download=True, transform=transform)
+    dataset_class = datasets.CIFAR100 if dataset_name == "cifar100" else datasets.CIFAR10
+    dataset = dataset_class(data_root, train=False, download=True, transform=transform)
     return dataset, dataset.classes
 
 
@@ -60,6 +63,7 @@ def load_model(checkpoint_path, device):
         config.embed_dims_i, config.embed_dims_t, config.num_heads_i,
         config.num_heads_t, config.hidden_dims_i, config.hidden_dims_t, config.num_layers,
         config.output_dims, config.context_length, config.vocab_size,
+        image_dropout=getattr(config, "image_dropout", 0.0),
     )
     model.load_state_dict(state_dict, strict=True)
     return model.to(device).eval()
@@ -89,7 +93,8 @@ def evaluate(model, zero_shot_loader, device, class_tokens, topk=1):
 
 def main(args, config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dataset, class_names = build_dataset(args.data_root)
+    dataset_name = args.dataset or getattr(config, "dataset", "cifar10")
+    dataset, class_names = build_dataset(args.data_root, dataset_name)
     class_tokens = build_class_tokens(class_names, args.template)
     loader = DataLoader(
         dataset,
@@ -101,18 +106,19 @@ def main(args, config):
         drop_last=False,
     )
     model = load_model(args.checkpoint, device)
-    print(f"Device: {device} | classes: {len(class_names)} | images: {len(dataset)}")
+    print(f"Device: {device} | dataset: {dataset_name} | classes: {len(class_names)} | images: {len(dataset)}")
     acc = evaluate(model, loader, device, class_tokens, topk=args.topk)
     print(f"Top-{args.topk} accuracy: {acc:.2%}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dataset", choices=("cifar10", "cifar100"), help="默认读取实验配置中的 dataset，旧配置默认 cifar10")
     parser.add_argument("--checkpoint", type=Path, required=True, help="train.py 保存的 best.pt 路径")
-    parser.add_argument("--data_root", type=Path, required=True, help="CIFAR-10 测试集的下载/缓存目录")
+    parser.add_argument("--data_root", type=Path, required=True, help="CIFAR-10/100 测试集的下载/缓存目录")
     parser.add_argument("--template", default="a photo of a {}", help="类别提示词模板，使用 {} 填入类别名")
-    parser.add_argument("--batch_size", type=int, default=128)
-    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--batch_size", type=int, default=512)
+    parser.add_argument("--num_workers", type=int, default=10)
     parser.add_argument("--topk", type=int, default=1, help="计算 Top-k 准确率，k 不得超过类别数")
     args = parser.parse_args()
     
