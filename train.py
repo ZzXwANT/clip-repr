@@ -280,10 +280,8 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--num_workers", type=int, default=8)
-    parser.add_argument("--image_preprocess", choices=("cpu", "cuda"), default="cpu",
-                        help="训练图像预处理设备；cuda 使用 Kornia")
-    parser.add_argument("--eval_preprocess", choices=("cpu", "cuda"), default="cuda",
-                        help="评估图像预处理设备，默认 cuda")
+    parser.add_argument("--image_preprocess", choices=("cpu", "cuda"), default="cuda",help="训练图像预处理设备；cuda 使用 Kornia")
+    parser.add_argument("--eval_preprocess", choices=("cpu", "cuda"), default="cuda",help="评估图像预处理设备，默认 cuda")
     parser.add_argument("--learning_rate", type=float, default=1e-4)
     parser.add_argument("--weight_decay", type=float, default=0.01)   # 添加weight_decay参数
     parser.add_argument("--num_epochs", type=int, default=100)
