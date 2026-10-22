@@ -2,7 +2,7 @@
 
 使用 PyTorch 实现 CLIP 的双编码器、Byte-level BPE 分词、同类多正样本对比损失，以及训练、评估和可视化 pipeline。图像来自 CIFAR，文本监督由类别名生成，例如 `a photo of a cat`。
 
-**本文所有实验均从随机初始化开始训练，图像编码器、文本编码器和 token embedding 均未加载预训练权重。** 分词器复用仓库内的 BPE merge 词表。
+**手写 CLIP 实验均从随机初始化开始训练，图像编码器、文本编码器和 token embedding 均未加载预训练权重。** 分词器复用仓库内的 BPE merge 词表；OpenAI 官方预训练模型的零样本对照见 [§2.6](#26-官方预训练-clip零样本对照)。
 
 | 任务 | 实验 | 当前可核验的 Top-1 |
 |---|---|---:|
@@ -11,6 +11,8 @@
 | CIFAR-100 → CIFAR-100，同数据集分类 | Base `exp13_dropout` | **64.70%** |
 | CIFAR-100 → CIFAR-100，同数据集分类 | Small `exp3_small_lr3e-4` | **62.64%** |
 | CIFAR-100 → CIFAR-10，跨数据集迁移 | Base `exp13_dropout` | **11.50%** |
+| 官方预训练 → CIFAR-10，零样本分类 | OpenAI CLIP ViT-B/32 | **88.80%** |
+| 官方预训练 → CIFAR-100，零样本分类 | OpenAI CLIP ViT-B/32 | **64.15%** |
 
 ## 1. 手写 pipeline
 
@@ -116,7 +118,7 @@ GPU 路径基于 Kornia，在 32 × 32 原图上先做颜色变换，再裁剪�
 
 ## 2. 实验结果
 
-以下准确率均为百分比。Train 使用无随机增强的训练集评估；表中 Train/Test 取自各实验最佳测试准确率对应的同一轮，差距为 Train − Test（百分点）。[完整数据](docs/results/experiment_summary.csv)
+以下准确率均为百分比。手写模型的 Train 使用无随机增强的训练集评估；表中 Train/Test 取自各实验最佳测试准确率对应的同一轮，差距为 Train − Test（百分点）。[完整数据](docs/results/experiment_summary.csv)
 
 ### 2.1 CIFAR-10：图像增强与抑制过拟合
 
@@ -211,6 +213,25 @@ Dropout: 将训练准确率从 97.89% 降至 96.04%，Train/Test 差距进一步
 | truck | 92.4 | 57.8 |
 
 同数据集模型主要混淆猫与狗。跨数据集模型存在明显预测偏向，整体准确率为 11.50%，接近 10 分类的随机基线，尚未表现出有效的跨数据集迁移能力。
+
+### 2.6 官方预训练 CLIP：零样本对照
+
+实测 OpenAI CLIP ViT-B/32 官方权重，使用官方分词器（长度 77）和 224 × 224 图像预处理，每类仅用 `a photo of a {}`，类名中的下划线替换为空格。不训练、不微调。两个测试集各评估全部 10,000 张图片。
+
+| 测试集 | 手写 Base 最佳 Test | 官方 ViT-B/32 零样本 Top-1 | 正确数 / 总数 |
+|---|---:|---:|---:|
+| CIFAR-10 | 86.74（exp11） | **88.80** | 8880 / 10000 |
+| CIFAR-100 | **64.70**（exp13） | 64.15 | 6415 / 10000 |
+
+官方模型使用大规模图文预训练；手写模型使用 CIFAR 类别监督并按测试集选最佳轮次，预处理也不同。[设置、来源与复跑说明](docs/results/openai_clip_vit_b32/README.md)
+
+- CIFAR-10：[混淆矩阵](docs/results/openai_clip_vit_b32/cifar10/confusion_matrix.png) · [计数 CSV](docs/results/openai_clip_vit_b32/cifar10/confusion_matrix.csv) · [实测记录](docs/results/openai_clip_vit_b32/cifar10/metrics.json)
+- CIFAR-100：[混淆矩阵](docs/results/openai_clip_vit_b32/cifar100/confusion_matrix.png) · [计数 CSV](docs/results/openai_clip_vit_b32/cifar100/confusion_matrix.csv) · [实测记录](docs/results/openai_clip_vit_b32/cifar100/metrics.json)
+
+```bash
+python -m pip install -r requirements.txt
+python scripts/evaluate_openai_clip.py --device cuda
+```
 
 ## 参考文献
 

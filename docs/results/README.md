@@ -1,6 +1,6 @@
 # README 实验结果快照
 
-快照日期：2026-10-22。结果来自已有文件，本次只做解析、复制和绘图，不做模型推理。
+快照日期：2026-10-22。历史实验结果来自已有文件的解析、复制和绘图；另附官方预训练 CLIP 的新零样本实测，见下表。
 
 | 文件 | 内容 |
 |---|---|
@@ -14,6 +14,7 @@
 | [tensorboard/provenance.json](tensorboard/provenance.json) | 原始事件与有效 CSV 的 SHA-256、数值单位、导出规则 |
 | [cifar10_exp12/](cifar10_exp12/) | 原 `outputs/cifar-10_on_cifar-10/` 的 PNG 和两份 CSV 的原样副本 |
 | [cifar100_to_cifar10_exp13/](cifar100_to_cifar10_exp13/) | 原 `outputs/cifar-100_on_cifar-10/` 的 PNG 和两份 CSV 的原样副本 |
+| [openai_clip_vit_b32/](openai_clip_vit_b32/README.md) | 官方权重的新 GPU 实测：CIFAR-10 88.80%、CIFAR-100 64.15%，含逐图预测、混淆矩阵、完整设置和文件哈希 |
 
 源模型根目录为 `~/autodl-tmp/model/`，JSON / CSV 中的实验路径均相对此目录。`code_commit` 是整理时本地 main 的提交，不表示每个历史实验都运行于该版本。保存配置中的绝对数据根目录在 info 副本中替换为 `<project>/data`。
 

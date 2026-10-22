@@ -10,3 +10,5 @@ ftfy==6.3.1
 tensorboard
 kornia==0.8.2
 matplotlib
+# Official OpenAI CLIP, fixed to the commit used for zero-shot evaluation.
+clip @ git+https://github.com/openai/CLIP.git@d05afc436d78f1c48dc0dbf8e5980a9d471f35f6
