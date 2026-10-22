@@ -9,3 +9,4 @@ regex==2026.1.15
 ftfy==6.3.1
 tensorboard
 kornia==0.8.2
+matplotlib

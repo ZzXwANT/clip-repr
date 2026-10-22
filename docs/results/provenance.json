@@ -1,0 +1,898 @@
+{
+  "snapshot_date": "2026-10-22",
+  "model_root": "~/autodl-tmp/model",
+  "code_commit": "f493c24",
+  "checkpoint_epoch_is_zero_based": true,
+  "experiments": [
+    {
+      "experiment": "cifar-100_vit-base-224-32/exp13_dropout",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512,
+        "image_dropout": 0.1
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 8\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n\n# config.dataset = 'cifar100'\nconfig.context_length = 16\n",
+      "info_text": "seed: 42\ndataset: cifar100\ndata_root: <project>/data\ncontext_length: 16\nbatch_size: 512\nnum_workers: 10\nlearning_rate: 0.0003\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "learning_rate": "0.0003",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 97,
+        "best_acc": 0.647
+      },
+      "source_config_dataset": null,
+      "logs": [
+        {
+          "path": "cifar-100_vit-base-224-32/exp13_dropout/train1_dropout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "log_headers": [],
+      "note": "Original console log empty; all 100 epochs recovered from TensorBoard events. Saved config.dataset is commented out; info.txt says cifar100.",
+      "tensorboard": {
+        "csv": "tensorboard/exp13_dropout_cifar-100.csv",
+        "run": "exp13_dropout_cifar-100",
+        "dataset": "CIFAR-100",
+        "epochs": "100",
+        "best_epoch": "98",
+        "best_test_pct": "64.70000147819519",
+        "train_at_best_test_pct": "98.90000224113464",
+        "last_epoch": "100",
+        "last_train_pct": "98.91200065612793",
+        "last_test_pct": "64.67999815940857",
+        "last_loss": "2.3434016704559326"
+      }
+    },
+    {
+      "experiment": "cifar-100_vit-base-224-32/exp14_lr1e-3",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512,
+        "image_dropout": 0.1,
+        "dataset": "cifar100"
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 16\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n\nconfig.dataset = 'cifar100'\nconfig.context_length = 16\n",
+      "info_text": "seed: 42\ndataset: cifar100\ndata_root: <project>/data\ncontext_length: 16\nbatch_size: 512\nnum_workers: 10\nimage_preprocess: cuda\neval_preprocess: cuda\nlearning_rate: 0.001\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "image_preprocess": "cuda",
+        "eval_preprocess": "cuda",
+        "learning_rate": "0.001",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 2,
+        "best_acc": 0.1401
+      },
+      "source_config_dataset": "cifar100",
+      "logs": [
+        {
+          "path": "cifar-100_vit-base-224-32/exp14_lr1e-3/train14_lr1e-3.log",
+          "sha256": "c27b5ca2885eaa934bcbbc071ad941feeda782e21650217507eaac71106e9acd"
+        }
+      ],
+      "log_headers": [
+        "2026-10-20 10:49:56,585 Training precision: bf16",
+        "2026-10-20 10:49:56,585 Image preprocessing: train=cpu | eval=cuda",
+        "2026-10-20 10:49:56,585 Image dropout: 0.1",
+        "2026-10-20 10:49:56,586 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-20 10:51:09,983 Training precision: bf16",
+        "2026-10-20 10:51:09,983 Image preprocessing: train=cuda | eval=cuda",
+        "2026-10-20 10:51:09,983 Image dropout: 0.1",
+        "2026-10-20 10:51:09,983 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-20 11:05:52,854 Training precision: bf16",
+        "2026-10-20 11:05:52,854 Image preprocessing: train=cuda | eval=cuda",
+        "2026-10-20 11:05:52,854 Image dropout: 0.1",
+        "2026-10-20 11:05:52,854 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16"
+      ],
+      "note": "Restarted runs mixed in one log: log max 19.54% differs from retained best.pt 14.01%; do not merge into one curve."
+    },
+    {
+      "experiment": "cifar-100_vit-base-224-32/exp15_lr1e-4",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512,
+        "image_dropout": 0.1,
+        "dataset": "cifar100"
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 16\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n\nconfig.dataset = 'cifar100'\nconfig.context_length = 16\n",
+      "info_text": "seed: 42\ndataset: cifar100\ndata_root: <project>/data\ncontext_length: 16\nbatch_size: 512\nnum_workers: 10\nimage_preprocess: cuda\neval_preprocess: cuda\nlearning_rate: 0.0001\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "image_preprocess": "cuda",
+        "eval_preprocess": "cuda",
+        "learning_rate": "0.0001",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 71,
+        "best_acc": 0.6207
+      },
+      "source_config_dataset": "cifar100",
+      "logs": [
+        {
+          "path": "cifar-100_vit-base-224-32/exp15_lr1e-4/train15_lr1e-4.log",
+          "sha256": "8894d1c95dfac34774d2eeca3a33a3fec7d67892ed90596f746c5e2ccd1070ad"
+        }
+      ],
+      "log_headers": [
+        "2026-10-20 11:15:58,082 Training precision: bf16",
+        "2026-10-20 11:15:58,082 Image preprocessing: train=cuda | eval=cuda",
+        "2026-10-20 11:15:58,082 Image dropout: 0.1",
+        "2026-10-20 11:15:58,082 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-100_vit-base-224-32/exp16_lr1e-4_adamw",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512,
+        "image_dropout": 0.1,
+        "dataset": "cifar100"
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 16\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n\nconfig.dataset = 'cifar100'\nconfig.context_length = 16\n",
+      "info_text": "seed: 42\ndataset: cifar100\ndata_root: <project>/data\ncontext_length: 16\nbatch_size: 512\nnum_workers: 10\nimage_preprocess: cuda\neval_preprocess: cuda\nlearning_rate: 0.0001\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "image_preprocess": "cuda",
+        "eval_preprocess": "cuda",
+        "learning_rate": "0.0001",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 45,
+        "best_acc": 0.56
+      },
+      "source_config_dataset": "cifar100",
+      "logs": [
+        {
+          "path": "cifar-100_vit-base-224-32/exp16_lr1e-4_adamw/train16_lr1e-4_adamw.log",
+          "sha256": "c5643e35aeb0d549b6a9203f705eb0f5438ffd053766f636d0ba09c0cd744244"
+        }
+      ],
+      "log_headers": [
+        "2026-10-20 12:51:43,949 Training precision: bf16",
+        "2026-10-20 12:51:43,950 Image preprocessing: train=cuda | eval=cuda",
+        "2026-10-20 12:51:43,950 Image dropout: 0.1",
+        "2026-10-20 12:51:43,950 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-100_vit-base-224-32/exp17_lr1e-4_adamw_logit_scale",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512,
+        "image_dropout": 0.1,
+        "dataset": "cifar100"
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 16\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n\nconfig.dataset = 'cifar100'\nconfig.context_length = 16\n",
+      "info_text": "seed: 42\ndataset: cifar100\ndata_root: <project>/data\ncontext_length: 16\nbatch_size: 512\nnum_workers: 10\nimage_preprocess: cuda\neval_preprocess: cuda\nlearning_rate: 0.0001\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "image_preprocess": "cuda",
+        "eval_preprocess": "cuda",
+        "learning_rate": "0.0001",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 75,
+        "best_acc": 0.6218
+      },
+      "source_config_dataset": "cifar100",
+      "logs": [
+        {
+          "path": "cifar-100_vit-base-224-32/exp17_lr1e-4_adamw_logit_scale/train17_lr1e-4_adamw_logit_scale.log",
+          "sha256": "582f5fddf7abb104f22e693133f4b17e20df644a5321acffa6d2fd45be6e834d"
+        }
+      ],
+      "log_headers": [
+        "2026-10-20 13:55:27,789 Training precision: bf16",
+        "2026-10-20 13:55:27,789 Image preprocessing: train=cuda | eval=cuda",
+        "2026-10-20 13:55:27,789 Image dropout: 0.1",
+        "2026-10-20 13:55:27,789 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-100_vit-small-224-32/exp2_small_lr1e-4",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 384,
+        "embed_dims_t": 256,
+        "num_heads_i": 6,
+        "num_heads_t": 4,
+        "hidden_dims_i": 1536,
+        "hidden_dims_t": 1024,
+        "num_layers": 6,
+        "output_dims": 256,
+        "image_dropout": 0.1,
+        "dataset": "cifar100"
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 8\n    embed_dims_i = 384\n    embed_dims_t = 256\n    num_heads_i = 6\n    num_heads_t = 4\n    hidden_dims_i = 1536\n    hidden_dims_t = 1024\n    num_layers = 6\n    output_dims = 256\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n\nconfig.dataset = 'cifar100'\nconfig.context_length = 16\n",
+      "info_text": "seed: 42\ndataset: cifar100\ndata_root: <project>/data\ncontext_length: 16\nbatch_size: 512\nnum_workers: 10\nlearning_rate: 0.0001\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "learning_rate": "0.0001",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 89,
+        "best_acc": 0.5549
+      },
+      "source_config_dataset": "cifar100",
+      "logs": [
+        {
+          "path": "cifar-100_vit-small-224-32/exp2_small_lr1e-4/train2_small_lr1e-4.log",
+          "sha256": "b9f62ea40437031bebcf49f06a463ce863450c815f630b41b4ae0e7379723ebf"
+        }
+      ],
+      "log_headers": [
+        "2026-10-19 20:42:52,014 Training precision: bf16",
+        "2026-10-19 20:42:52,015 Image dropout: 0.1",
+        "2026-10-19 20:42:52,015 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-19 20:45:28,854 Training precision: bf16",
+        "2026-10-19 20:45:28,855 Image dropout: 0.1",
+        "2026-10-19 20:45:28,855 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-19 20:48:32,807 Training precision: bf16",
+        "2026-10-19 20:48:32,808 Image dropout: 0.1",
+        "2026-10-19 20:48:32,808 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-100_vit-small-224-32/exp3_small_lr3e-4",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 384,
+        "embed_dims_t": 256,
+        "num_heads_i": 6,
+        "num_heads_t": 4,
+        "hidden_dims_i": 1536,
+        "hidden_dims_t": 1024,
+        "num_layers": 6,
+        "output_dims": 256,
+        "image_dropout": 0.1,
+        "dataset": "cifar100"
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 8\n    embed_dims_i = 384\n    embed_dims_t = 256\n    num_heads_i = 6\n    num_heads_t = 4\n    hidden_dims_i = 1536\n    hidden_dims_t = 1024\n    num_layers = 6\n    output_dims = 256\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n\nconfig.dataset = 'cifar100'\nconfig.context_length = 16\n",
+      "info_text": "seed: 42\ndataset: cifar100\ndata_root: <project>/data\ncontext_length: 16\nbatch_size: 512\nnum_workers: 10\nimage_preprocess: cpu\neval_preprocess: cuda\nlearning_rate: 0.0003\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "image_preprocess": "cpu",
+        "eval_preprocess": "cuda",
+        "learning_rate": "0.0003",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 95,
+        "best_acc": 0.6264
+      },
+      "source_config_dataset": "cifar100",
+      "logs": [
+        {
+          "path": "cifar-100_vit-small-224-32/exp3_small_lr3e-4/train3_small_lr3e-4.log",
+          "sha256": "5cb5aaf31420bfd436cdd3cb07ba8f8c8b5adec3936e13bd4f38d321e065a4a9"
+        }
+      ],
+      "log_headers": [
+        "2026-10-19 23:05:10,263 Training precision: bf16",
+        "2026-10-19 23:05:10,264 Image dropout: 0.1",
+        "2026-10-19 23:05:10,265 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-19 23:24:29,855 Training precision: bf16",
+        "2026-10-19 23:24:29,855 Image preprocessing: cuda",
+        "2026-10-19 23:24:29,855 Image dropout: 0.1",
+        "2026-10-19 23:24:29,855 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-19 23:32:37,733 Training precision: bf16",
+        "2026-10-19 23:32:37,733 Image preprocessing: train=cpu | eval=cuda",
+        "2026-10-19 23:32:37,733 Image dropout: 0.1",
+        "2026-10-19 23:32:37,733 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-100_vit-small-224-32/exp4_small_lr1e-3",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 384,
+        "embed_dims_t": 256,
+        "num_heads_i": 6,
+        "num_heads_t": 4,
+        "hidden_dims_i": 1536,
+        "hidden_dims_t": 1024,
+        "num_layers": 6,
+        "output_dims": 256,
+        "image_dropout": 0.1,
+        "dataset": "cifar100"
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 8\n    embed_dims_i = 384\n    embed_dims_t = 256\n    num_heads_i = 6\n    num_heads_t = 4\n    hidden_dims_i = 1536\n    hidden_dims_t = 1024\n    num_layers = 6\n    output_dims = 256\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n\nconfig.dataset = 'cifar100'\nconfig.context_length = 16\n",
+      "info_text": "seed: 42\ndataset: cifar100\ndata_root: <project>/data\ncontext_length: 16\nbatch_size: 512\nnum_workers: 10\nimage_preprocess: cuda\neval_preprocess: cuda\nlearning_rate: 0.001\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "image_preprocess": "cuda",
+        "eval_preprocess": "cuda",
+        "learning_rate": "0.001",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 90,
+        "best_acc": 0.614
+      },
+      "source_config_dataset": "cifar100",
+      "logs": [
+        {
+          "path": "cifar-100_vit-small-224-32/exp4_small_lr1e-3/train3_small_lr1e-4.log",
+          "sha256": "93761ab13d688a0c1d94380fdfdcc1b5d812ddf83058974fda45303c7fa1d290"
+        },
+        {
+          "path": "cifar-100_vit-small-224-32/exp4_small_lr1e-3/train4_small_lr1e-3.log",
+          "sha256": "c2950528fd014b785cfeb0a94edfb7753461c4b3dbf6802401a633bd393b15de"
+        }
+      ],
+      "log_headers": [
+        "2026-10-20 09:21:40,445 Training precision: bf16",
+        "2026-10-20 09:21:40,445 Image preprocessing: train=cpu | eval=cpu",
+        "2026-10-20 09:21:40,446 Image dropout: 0.1",
+        "2026-10-20 09:21:40,446 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-20 09:25:37,733 Training precision: bf16",
+        "2026-10-20 09:25:37,734 Image preprocessing: train=cpu | eval=cuda",
+        "2026-10-20 09:25:37,734 Image dropout: 0.1",
+        "2026-10-20 09:25:37,734 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-20 09:46:16,198 Training precision: bf16",
+        "2026-10-20 09:46:16,198 Image preprocessing: train=cuda | eval=cuda",
+        "2026-10-20 09:46:16,198 Image dropout: 0.1",
+        "2026-10-20 09:46:16,198 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16",
+        "2026-10-20 09:47:06,019 Training precision: bf16",
+        "2026-10-20 09:47:06,019 Image preprocessing: train=cuda | eval=cuda",
+        "2026-10-20 09:47:06,019 Image dropout: 0.1",
+        "2026-10-20 09:47:06,019 Dataset: cifar100 | cached class tokens: (100, 16) | context_length: 16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-10_vit-base-224-32/exp10_accl_weight_decay",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 8,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 8      # 77->8 \n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n",
+      "info_text": "seed: 42\nbatch_size: 384\nnum_workers: 8\nlearning_rate: 0.0003\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nreset_scheduler: False\n\n# 文本编码时去重，显存大大降低；context_length影响显存较小；\n# 使用SDPA，F.layernrom加速\n\n\n",
+      "info": {
+        "seed": "42",
+        "batch_size": "384",
+        "num_workers": "8",
+        "learning_rate": "0.0003",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 89,
+        "best_acc": 0.8144
+      },
+      "source_config_dataset": null,
+      "logs": [
+        {
+          "path": "cifar-10_vit-base-224-32/exp10_accl_weight_decay/train10_accl_weight_decay.log",
+          "sha256": "bfc769869f82fa573f5b75f36325dd77177d7f8958071b64c36c29f05e75d88f"
+        }
+      ],
+      "log_headers": [
+        "2026-10-16 15:29:20,841 Training precision: bf16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-10_vit-base-224-32/exp11_more_aug",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 8,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 8\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n",
+      "info_text": "seed: 42\nbatch_size: 512\nnum_workers: 10\nlearning_rate: 0.0003\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "batch_size": "512",
+        "num_workers": "10",
+        "learning_rate": "0.0003",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 91,
+        "best_acc": 0.8674
+      },
+      "source_config_dataset": null,
+      "logs": [
+        {
+          "path": "cifar-10_vit-base-224-32/exp11_more_aug/train11_more_aug.log",
+          "sha256": "66c1c13815e5188c37630ad3a6d21f8c62d8d997247fb415fff5fd0a8541f8b7"
+        }
+      ],
+      "log_headers": [
+        "2026-10-17 18:59:50,750 Training precision: bf16",
+        "2026-10-17 19:01:27,719 Training precision: bf16",
+        "2026-10-17 19:02:44,946 Training precision: bf16",
+        "2026-10-17 19:04:13,309 Training precision: bf16",
+        "2026-10-17 19:08:58,349 Training precision: bf16",
+        "2026-10-17 19:12:28,348 Training precision: bf16",
+        "2026-10-17 19:16:37,541 Training precision: bf16",
+        "2026-10-17 19:19:58,864 Training precision: bf16",
+        "2026-10-17 19:23:17,527 Training precision: bf16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-10_vit-base-224-32/exp12_dropout",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 8,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512,
+        "image_dropout": 0.1
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 8\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n    image_dropout = 0.1  # 图像 Transformer dropout；设为 0.0 可做基线对照\n",
+      "info_text": "seed: 42\nbatch_size: 512\nnum_workers: 10\nlearning_rate: 0.0003\nweight_decay: 0.05\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nimage_dropout: 0.1\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "batch_size": "512",
+        "num_workers": "10",
+        "learning_rate": "0.0003",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 91,
+        "best_acc": 0.8603
+      },
+      "source_config_dataset": null,
+      "logs": [
+        {
+          "path": "cifar-10_vit-base-224-32/exp12_dropout/train12_dropout.log",
+          "sha256": "31fb1c7f743e5a58c60b5df536c6a8f4365e45d853872b1fcf3b02ee8a6081e1"
+        }
+      ],
+      "log_headers": [
+        "2026-10-18 13:30:45,555 Training precision: bf16",
+        "2026-10-18 13:30:45,556 Image dropout: 0.1"
+      ],
+      "note": "",
+      "tensorboard": {
+        "csv": "tensorboard/exp12_dropout.csv",
+        "run": "exp12_dropout",
+        "dataset": "CIFAR-10",
+        "epochs": "100",
+        "best_epoch": "92",
+        "best_test_pct": "86.03000044822693",
+        "train_at_best_test_pct": "96.03999853134155",
+        "last_epoch": "100",
+        "last_train_pct": "96.14199995994568",
+        "last_test_pct": "85.85000038146973",
+        "last_loss": "4.299785137176514"
+      }
+    },
+    {
+      "experiment": "cifar-10_vit-base-224-32/exp8-orgin-3e-4-bf16",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 77,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 77\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n",
+      "info_text": "seed: 42\nbatch_size: 256\nnum_workers: 8\nlearning_rate: 0.0003\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nreset_scheduler: False\n",
+      "info": {
+        "seed": "42",
+        "batch_size": "256",
+        "num_workers": "8",
+        "learning_rate": "0.0003",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {
+        "epoch": 92,
+        "best_acc": 0.7271
+      },
+      "source_config_dataset": null,
+      "logs": [
+        {
+          "path": "cifar-10_vit-base-224-32/exp8-orgin-3e-4-bf16/train8.log",
+          "sha256": "a67209ad0aca6b5fa06610e6b4ac219b421fbc4667a62a4a5dc3f4e97236a756"
+        }
+      ],
+      "log_headers": [
+        "2026-10-15 22:13:24,697 Training precision: bf16"
+      ],
+      "note": ""
+    },
+    {
+      "experiment": "cifar-10_vit-base-224-32/exp9_augI",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 77,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512
+      },
+      "config_text": "# 这里保存了模型的参数\n\nclass config:\n    img_size = 224\n    patch_size = 32 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 77\n    embed_dims_i = 768\n    embed_dims_t = 512\n    num_heads_i = 12\n    num_heads_t = 8\n    hidden_dims_i = 3072\n    hidden_dims_t = 2048\n    num_layers = 12\n    output_dims = 512\n",
+      "info_text": "seed: 42\nbatch_size: 384\nnum_workers: 8\nlearning_rate: 0.0003\nweight_decay: 0.01 # 后加\nnum_epochs: 100\nwarmup_epochs: 5\nprecision: bf16\nreset_scheduler: False\n\n模型文件被覆盖了。。。",
+      "info": {
+        "seed": "42",
+        "batch_size": "384",
+        "num_workers": "8",
+        "learning_rate": "0.0003",
+        "weight_decay": "0.01 # 后加",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "reset_scheduler": "False"
+      },
+      "checkpoint_metadata": {},
+      "source_config_dataset": null,
+      "logs": [
+        {
+          "path": "cifar-10_vit-base-224-32/exp9_augI/train9.log",
+          "sha256": "34098235bd1758e9fb27c7b409ffa437f82e3c3e1b84e5906152bef67a6e6da7"
+        }
+      ],
+      "log_headers": [
+        "2026-10-16 10:52:24,444 Training precision: bf16",
+        "2026-10-16 10:55:47,294 Training precision: bf16"
+      ],
+      "note": "info.txt reports overwritten model; best.pt is unavailable. Weight decay annotated as added later."
+    },
+    {
+      "experiment": "cifar-10_vit-base-32-4/exp5-lr3e-4-bf16",
+      "saved_config": {
+        "img_size": 32,
+        "patch_size": 4,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 768,
+        "embed_dims_t": 768,
+        "num_heads_i": 12,
+        "num_heads_t": 12,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 3072,
+        "num_layers": 12,
+        "output_dims": 512,
+        "seed": 42,
+        "num_workers": 8,
+        "batch_size": 256,
+        "learning_rate": 0.0003,
+        "num_epochs": 100,
+        "weight_decay": 0.01,
+        "resume": false,
+        "warmup_epochs": 5
+      },
+      "config_text": "class config:\n    img_size = 32\n    patch_size = 4 \n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 16\n    embed_dims_i = embed_dims_t = 768\n    num_heads_i = num_heads_t = 12\n    hidden_dims_i = hidden_dims_t = 3072\n    num_layers = 12\n    output_dims = 512\n    \n    seed = 42\n    num_workers = 8\n    batch_size = 256\n    learning_rate = 3e-4\n    num_epochs = 100\n    weight_decay = 0.01  \n    resume = False\n    \n    warmup_epochs = 5 # 添加 warmup 稳定前期训练, 从exp5开始训练成功\n    \n    # bf16\n    \n    # 2026-10-14 19:40:18",
+      "info_text": "",
+      "info": {},
+      "checkpoint_metadata": {},
+      "source_config_dataset": null,
+      "logs": [
+        {
+          "path": "cifar-10_vit-base-32-4/exp5-lr3e-4-bf16/train5.log",
+          "sha256": "a27b1fc4224ccd215e4138917d2b2b38be48dc81ae24a7e58ab2803b1252c2c2"
+        }
+      ],
+      "log_headers": [],
+      "note": "Historical log reports acc only; split is not named in the log. No retained best.pt."
+    },
+    {
+      "experiment": "cifar-10_vit-base-32-4/exp7-lr1e-4-fp32",
+      "saved_config": {
+        "img_size": 32,
+        "patch_size": 4,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 768,
+        "embed_dims_t": 768,
+        "num_heads_i": 12,
+        "num_heads_t": 12,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 3072,
+        "num_layers": 12,
+        "output_dims": 512,
+        "seed": 42,
+        "num_workers": 8,
+        "batch_size": 256,
+        "learning_rate": 0.0001,
+        "num_epochs": 100,
+        "weight_decay": 0.01,
+        "resume": false
+      },
+      "config_text": "class config:\n    img_size = 32\n    patch_size = 4\n    in_chans = 3\n    vocab_size = 49152 + 256\n    context_length = 16\n    embed_dims_i = embed_dims_t = 768\n    num_heads_i = num_heads_t = 12\n    hidden_dims_i = hidden_dims_t = 3072\n    num_layers = 12\n    output_dims = 512\n\n    seed = 42\n    num_workers = 8\n    batch_size = 256\n    learning_rate = 1e-4\n    num_epochs = 100\n    weight_decay = 0.01\n    resume = False\n    \n#     warmup_epochs = 5\n    \n#     fp32\n",
+      "info_text": "",
+      "info": {},
+      "checkpoint_metadata": {},
+      "source_config_dataset": null,
+      "logs": [
+        {
+          "path": "cifar-10_vit-base-32-4/exp7-lr1e-4-fp32/train7.log",
+          "sha256": "674691eca470c35225fb7e2d02c55309e6b01d084c5fcfa8b3125dd70f817675"
+        }
+      ],
+      "log_headers": [],
+      "note": "Historical log reports acc only; split is not named in the log. No retained best.pt."
+    }
+  ],
+  "confusion_matrices": [
+    {
+      "experiment": "cifar-10_vit-base-224-32/exp12_dropout/best.pt",
+      "examples": 10000,
+      "correct": 8603,
+      "accuracy_pct": 86.03,
+      "per_class_recall_pct": {
+        "airplane": 87.4,
+        "automobile": 92.6,
+        "bird": 81.3,
+        "cat": 70.3,
+        "deer": 85.6,
+        "dog": 79.3,
+        "frog": 89.2,
+        "horse": 89.4,
+        "ship": 92.8,
+        "truck": 92.4
+      },
+      "files": [
+        {
+          "source": "outputs/cifar-10_on_cifar-10/confusion_matrix.png",
+          "copy": "docs/results/cifar10_exp12/confusion_matrix.png",
+          "sha256": "16452dbce976138397ffa9277a6f624b491c1971f60f6b40fe2be09c0ff4bb06"
+        },
+        {
+          "source": "outputs/cifar-10_on_cifar-10/confusion_matrix.csv",
+          "copy": "docs/results/cifar10_exp12/confusion_matrix.csv",
+          "sha256": "2bee611bbddc9ba90e5e8c5658c5a33ca750b011677c019f4b4e1fd2a68034e0"
+        },
+        {
+          "source": "outputs/cifar-10_on_cifar-10/confusion_matrix_normalized.csv",
+          "copy": "docs/results/cifar10_exp12/confusion_matrix_normalized.csv",
+          "sha256": "127efa65242bd160fb2b4df829c1e0b777765bdd074c7969d460051080768742"
+        }
+      ],
+      "preprocess": "Not recorded alongside the existing matrix; no new inference performed."
+    },
+    {
+      "experiment": "cifar-100_vit-base-224-32/exp13_dropout/best.pt",
+      "examples": 10000,
+      "correct": 1150,
+      "accuracy_pct": 11.5,
+      "per_class_recall_pct": {
+        "airplane": 4.8,
+        "automobile": 1.2,
+        "bird": 0.5,
+        "cat": 3.2,
+        "deer": 0.7,
+        "dog": 33.2,
+        "frog": 0.1,
+        "horse": 3.9,
+        "ship": 9.6,
+        "truck": 57.8
+      },
+      "files": [
+        {
+          "source": "outputs/cifar-100_on_cifar-10/confusion_matrix.png",
+          "copy": "docs/results/cifar100_to_cifar10_exp13/confusion_matrix.png",
+          "sha256": "818e25dd6b54360cb1eeda91c4998aeeab118955b85c4e22737ddb7796030a6f"
+        },
+        {
+          "source": "outputs/cifar-100_on_cifar-10/confusion_matrix.csv",
+          "copy": "docs/results/cifar100_to_cifar10_exp13/confusion_matrix.csv",
+          "sha256": "eaa1860ef48d125610800c1cdc2ce7a5be0a182ca04454d58627f5c967f55d47"
+        },
+        {
+          "source": "outputs/cifar-100_on_cifar-10/confusion_matrix_normalized.csv",
+          "copy": "docs/results/cifar100_to_cifar10_exp13/confusion_matrix_normalized.csv",
+          "sha256": "9a28d64a02afda9db30b8cae195d40ef05066489191be637a559fa7c71c4bd92"
+        }
+      ],
+      "preprocess": "Not recorded alongside the existing matrix; no new inference performed."
+    }
+  ],
+  "supplementary_tensorboard": {
+    "manifest": "tensorboard/provenance.json",
+    "summary": "tensorboard/summary.csv",
+    "epoch_rows": 200,
+    "scalar_samples": 1000,
+    "original_console_log_rows": 1219,
+    "note": "Downloaded .csv files are HTML. Recovered values are exported from original TensorBoard scalar events; no training or model inference."
+  }
+}

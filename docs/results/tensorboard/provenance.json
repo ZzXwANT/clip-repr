@@ -1,0 +1,49 @@
+{
+  "source": "TensorBoard scalar events; the downloaded .csv files contain HTML, not training data.",
+  "accuracy_unit": "fraction in CSV; percent in plots and summary.csv",
+  "step_unit": "one epoch; train.py writes epoch + 1",
+  "duplicate_step_policy": "last scalar occurrence per tag and step",
+  "smoothing": "none",
+  "runs": [
+    {
+      "run": "exp12_dropout",
+      "dataset": "CIFAR-10",
+      "event_directory": "outputs/tensorboard/exp12_dropout",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792301445.autodl-container-612d499cae-aaa6e3a4.4710.0",
+          "sha256": "d1fa7acf62d5fe44a5f9d99d7dda40d6508f4ad66e65694d38f55b7936e04452"
+        }
+      ],
+      "downloaded_csv": {
+        "name": "tensorboard_exp12_dropout.csv",
+        "sha256": "be8ab1db0a0d6bdc8d2eaa00c28d40fdfd1136d3be1cf0cb75842e966ad1aa70",
+        "is_html": true
+      },
+      "exported_csv": "exp12_dropout.csv",
+      "exported_csv_sha256": "9a431be6fc839aa5af1f1c00d0fd3a14f4291b5adc5176882fa1d17bd8865749",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp13_dropout_cifar-100",
+      "dataset": "CIFAR-100",
+      "event_directory": "outputs/tensorboard/exp13_dropout_cifar-100",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792341625.autodl-container-612d499cae-aaa6e3a4.4344.0",
+          "sha256": "b9bc700c6e76ce10f41dac57c91a4a42e890446f2fb4c7b66814d05139be4fd8"
+        }
+      ],
+      "downloaded_csv": {
+        "name": "tensorboard_exp13_dropout_cifar-100.csv",
+        "sha256": "be8ab1db0a0d6bdc8d2eaa00c28d40fdfd1136d3be1cf0cb75842e966ad1aa70",
+        "is_html": true
+      },
+      "exported_csv": "exp13_dropout_cifar-100.csv",
+      "exported_csv_sha256": "18b0caadc30a71e124f5ff4d6ae5f5138e22df81a53a1505cc36a996c3a9907f",
+      "epochs": 100,
+      "scalar_samples": 500
+    }
+  ]
+}
