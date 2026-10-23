@@ -1,0 +1,271 @@
+{
+  "purpose": "Handwritten CLIP versus OpenCLIP, trained from scratch separately on CIFAR-10 and CIFAR-100.",
+  "pairs": {
+    "cifar10": [
+      "exp8_origin-224",
+      "exp20_open_clip"
+    ],
+    "cifar100": [
+      "exp13_dropout_cifar-100",
+      "exp21_open_clip"
+    ]
+  },
+  "comparison_scope": "Existing training setups differ in context length, batch size, augmentation, normalization and optimizer settings; this is not a single-variable ablation.",
+  "recorded_epochs": {
+    "exp8_origin-224": 99,
+    "exp20_open_clip": 100,
+    "exp13_dropout_cifar-100": 100,
+    "exp21_open_clip": 93
+  },
+  "exp8_train_metric_note": "The historical train loader included random horizontal flip and drop_last; its train metric differs from the deterministic full-train evaluation used by later runs.",
+  "runs": {
+    "exp8_origin-224": {
+      "source_model_directory": "cifar-10_vit-base-224-32/exp8-orgin-3e-4-bf16",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 77,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512
+      },
+      "saved_info": {
+        "seed": "42",
+        "batch_size": "256",
+        "num_workers": "8",
+        "learning_rate": "0.0003",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "reset_scheduler": "False"
+      },
+      "source_config_sha256": "dcd805ebfbbe3e5a99bdf21d568b7a3c226614de3eabbe71821d6c0b3ebc48fc",
+      "checkpoint_optimizer_scalars": {
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "parameter_groups": [
+          {
+            "parameters": 103,
+            "weight_decay": 0.01
+          },
+          {
+            "parameters": 199,
+            "weight_decay": 0.0
+          }
+        ],
+        "logit_scale_weight_decay": 0.0
+      },
+      "checkpoint_pickle_sha256": "410f281e2cd32659bb991b404cce3b5d013a2ecc564dfaf63fc912a9800d57c4",
+      "checkpoint_inspection": "Only data.pkl scalar opcodes were read; tensors were not loaded."
+    },
+    "exp13_dropout_cifar-100": {
+      "source_model_directory": "cifar-100_vit-base-224-32/exp13_dropout",
+      "saved_config": {
+        "img_size": 224,
+        "patch_size": 32,
+        "in_chans": 3,
+        "context_length": 16,
+        "embed_dims_i": 768,
+        "embed_dims_t": 512,
+        "num_heads_i": 12,
+        "num_heads_t": 8,
+        "hidden_dims_i": 3072,
+        "hidden_dims_t": 2048,
+        "num_layers": 12,
+        "output_dims": 512,
+        "image_dropout": 0.1
+      },
+      "saved_info": {
+        "seed": "42",
+        "dataset": "cifar100",
+        "data_root": "<project>/data",
+        "context_length": "16",
+        "batch_size": "512",
+        "num_workers": "10",
+        "learning_rate": "0.0003",
+        "weight_decay": "0.05",
+        "num_epochs": "100",
+        "warmup_epochs": "5",
+        "precision": "bf16",
+        "image_dropout": "0.1",
+        "reset_scheduler": "False"
+      },
+      "source_config_sha256": "4712eaa82d8cad36f94554cd4d7def548251c77363e17a26986f39dfe157035a",
+      "checkpoint_optimizer_scalars": {
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "parameter_groups": [
+          {
+            "parameters": 103,
+            "weight_decay": 0.05
+          },
+          {
+            "parameters": 199,
+            "weight_decay": 0.0
+          }
+        ],
+        "logit_scale_weight_decay": 0.0
+      },
+      "checkpoint_pickle_sha256": "4f6da5c018ca5b63b263e3875be5539343d674aee59652f7dac6c83058ef3238",
+      "checkpoint_inspection": "Only data.pkl scalar opcodes were read; tensors were not loaded."
+    },
+    "exp20_open_clip": {
+      "settings": {
+        "dataset": "cifar10",
+        "context_length": 8,
+        "batch_size": 512,
+        "learning_rate": 0.0003,
+        "weight_decay": 0.05,
+        "no_logit_scale_wd": true,
+        "num_epochs": 100,
+        "warmup_epochs": 5,
+        "precision": "bf16",
+        "seed": 42,
+        "smoke_test": false,
+        "open_clip_version": "3.3.0",
+        "steps_per_epoch": 97,
+        "pipeline": "open_clip_native_v1"
+      },
+      "model_name": "ViT-B-32",
+      "model_config": {
+        "embed_dim": 512,
+        "vision_cfg": {
+          "image_size": 224,
+          "layers": 12,
+          "width": 768,
+          "patch_size": 32,
+          "patch_dropout": 0.0
+        },
+        "text_cfg": {
+          "context_length": 8,
+          "vocab_size": 49408,
+          "width": 512,
+          "heads": 8,
+          "layers": 12
+        },
+        "quick_gelu": true
+      },
+      "pretrained": null,
+      "dropout": 0.0,
+      "preprocess_cfg": {
+        "size": [
+          224,
+          224
+        ],
+        "mode": "RGB",
+        "mean": [
+          0.48145466,
+          0.4578275,
+          0.40821073
+        ],
+        "std": [
+          0.26862954,
+          0.26130258,
+          0.27577711
+        ],
+        "interpolation": "bicubic",
+        "resize_mode": "shortest",
+        "fill_color": 0
+      },
+      "train_transform": "Compose(\n    RandomResizedCrop(size=(224, 224), scale=(0.9, 1.0), ratio=(0.75, 1.3333), interpolation=bicubic, antialias=True)\n    MaybeConvertMode()\n    MaybeToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+      "eval_transform": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    MaybeConvertMode()\n    MaybeToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+      "loss": "open_clip.ClipLoss",
+      "scheduler": "open_clip_train.scheduler.cosine_lr",
+      "optimizer": {
+        "name": "AdamW",
+        "betas": [
+          0.9,
+          0.98
+        ],
+        "eps": 1e-06
+      },
+      "source_config": "cifar-10_vit-base-224-32/exp20_open_clip/config.json",
+      "source_config_sha256": "5ef07b9fb9d0a7e0eb317aa7891aeff18f04f4f75c8ef882c20c13e3c9b77fba"
+    },
+    "exp21_open_clip": {
+      "settings": {
+        "dataset": "cifar100",
+        "context_length": 16,
+        "batch_size": 512,
+        "learning_rate": 0.0003,
+        "weight_decay": 0.05,
+        "no_logit_scale_wd": true,
+        "num_epochs": 100,
+        "warmup_epochs": 5,
+        "precision": "bf16",
+        "seed": 42,
+        "smoke_test": false,
+        "open_clip_version": "3.3.0",
+        "steps_per_epoch": 97,
+        "pipeline": "open_clip_native_v1"
+      },
+      "model_name": "ViT-B-32",
+      "model_config": {
+        "embed_dim": 512,
+        "vision_cfg": {
+          "image_size": 224,
+          "layers": 12,
+          "width": 768,
+          "patch_size": 32,
+          "patch_dropout": 0.0
+        },
+        "text_cfg": {
+          "context_length": 16,
+          "vocab_size": 49408,
+          "width": 512,
+          "heads": 8,
+          "layers": 12
+        },
+        "quick_gelu": true
+      },
+      "pretrained": null,
+      "dropout": 0.0,
+      "preprocess_cfg": {
+        "size": [
+          224,
+          224
+        ],
+        "mode": "RGB",
+        "mean": [
+          0.48145466,
+          0.4578275,
+          0.40821073
+        ],
+        "std": [
+          0.26862954,
+          0.26130258,
+          0.27577711
+        ],
+        "interpolation": "bicubic",
+        "resize_mode": "shortest",
+        "fill_color": 0
+      },
+      "train_transform": "Compose(\n    RandomResizedCrop(size=(224, 224), scale=(0.9, 1.0), ratio=(0.75, 1.3333), interpolation=bicubic, antialias=True)\n    MaybeConvertMode()\n    MaybeToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+      "eval_transform": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    MaybeConvertMode()\n    MaybeToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+      "loss": "open_clip.ClipLoss",
+      "scheduler": "open_clip_train.scheduler.cosine_lr",
+      "optimizer": {
+        "name": "AdamW",
+        "betas": [
+          0.9,
+          0.98
+        ],
+        "eps": 1e-06
+      },
+      "source_config": "cifar-100_vit-base-224-32/exp21_open_clip/config.json",
+      "source_config_sha256": "f6f00f5abfb7c1ea66d73e60df2c4cba699fbe99d5322d8e9009f6fb3133f494"
+    }
+  }
+}

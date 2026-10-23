@@ -1,0 +1,77 @@
+{
+  "source": "TensorBoard scalar events; downloaded CSV files are not used.",
+  "accuracy_unit": "fraction in CSV; percent in plots and summary.csv",
+  "step_unit": "one epoch; training scripts write epoch + 1",
+  "duplicate_step_policy": "last scalar occurrence per tag and step",
+  "smoothing": "none",
+  "runs": [
+    {
+      "run": "exp8_origin-224",
+      "dataset": "CIFAR-10",
+      "event_directory": "outputs/tensorboard/exp8_origin-224",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792073604.autodl-container-0cb34aa682-65b80013.3633.0",
+          "sha256": "b0ecfdd378cbb34f19c2955a48037e148b5c4c8915a6263627fdf14bd879c27f"
+        }
+      ],
+      "downloaded_csv": null,
+      "exported_csv": "exp8_origin-224.csv",
+      "exported_csv_sha256": "354c2e8678f9e50318b40bd5a1b07a50fd3189786e0ab05b3d478f1544bc9ced",
+      "epochs": 99,
+      "scalar_samples": 495
+    },
+    {
+      "run": "exp20_open_clip",
+      "dataset": "CIFAR-10",
+      "event_directory": "outputs/tensorboard/exp20_open_clip",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792685534.autodl-container-612d499cae-aaa6e3a4.6647.0",
+          "sha256": "39788741a11578dbc3e2824fd1e846907db517da1a4af5707f71e4020f6cd41f"
+        }
+      ],
+      "downloaded_csv": null,
+      "exported_csv": "exp20_open_clip.csv",
+      "exported_csv_sha256": "a991c82f0791dc42fe3fdfd159eecea7579eee85d946e99e9e034de89988cee2",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp13_dropout_cifar-100",
+      "dataset": "CIFAR-100",
+      "event_directory": "outputs/tensorboard/exp13_dropout_cifar-100",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792341625.autodl-container-612d499cae-aaa6e3a4.4344.0",
+          "sha256": "b9bc700c6e76ce10f41dac57c91a4a42e890446f2fb4c7b66814d05139be4fd8"
+        }
+      ],
+      "downloaded_csv": {
+        "name": "tensorboard_exp13_dropout_cifar-100.csv",
+        "sha256": "be8ab1db0a0d6bdc8d2eaa00c28d40fdfd1136d3be1cf0cb75842e966ad1aa70",
+        "is_html": true
+      },
+      "exported_csv": "exp13_dropout_cifar-100.csv",
+      "exported_csv_sha256": "60fa71af53fb468d443483dc7a24d38d3a8f6106e57aaa17d1913601798b0d2e",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp21_open_clip",
+      "dataset": "CIFAR-100",
+      "event_directory": "outputs/tensorboard/exp21_open_clip",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792695067.autodl-container-612d499cae-aaa6e3a4.10073.0",
+          "sha256": "99f7589c62f31e7c41bbe86fb095914ec13739623f7deb4f3fa2e9f43ee63203"
+        }
+      ],
+      "downloaded_csv": null,
+      "exported_csv": "exp21_open_clip.csv",
+      "exported_csv_sha256": "632ff8a42fdb527167e5b7ca65bdbb8a14f046668b920ac21f2fd77de18528af",
+      "epochs": 93,
+      "scalar_samples": 465
+    }
+  ]
+}

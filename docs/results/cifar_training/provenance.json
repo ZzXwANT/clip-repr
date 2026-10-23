@@ -1,0 +1,189 @@
+{
+  "source": "TensorBoard scalar events; downloaded CSV files are not used.",
+  "accuracy_unit": "fraction in CSV; percent in plots and summary.csv",
+  "step_unit": "one epoch; training scripts write epoch + 1",
+  "duplicate_step_policy": "last scalar occurrence per tag and step",
+  "smoothing": "none",
+  "runs": [
+    {
+      "run": "exp22_handwritten",
+      "dataset": "CIFAR-10",
+      "event_directory": "outputs/tensorboard/exp22_handwritten",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792723629.autodl-container-g1f8p6tjj9-771b7b4b.3164.0",
+          "sha256": "e0f50eb98070af95e95e595ac5406ce3aac429e80123ac5255b260c84956bd59"
+        }
+      ],
+      "downloaded_csv": null,
+      "exported_csv": "exp22_handwritten.csv",
+      "exported_csv_sha256": "20532d24ae8f04f7f4682f9149b0ca0156814274cc8f264060afdb38c1eb1bdb",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp20_open_clip",
+      "dataset": "CIFAR-10",
+      "event_directory": "outputs/tensorboard/exp20_open_clip",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792685534.autodl-container-612d499cae-aaa6e3a4.6647.0",
+          "sha256": "39788741a11578dbc3e2824fd1e846907db517da1a4af5707f71e4020f6cd41f"
+        }
+      ],
+      "downloaded_csv": null,
+      "exported_csv": "exp20_open_clip.csv",
+      "exported_csv_sha256": "a991c82f0791dc42fe3fdfd159eecea7579eee85d946e99e9e034de89988cee2",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp23_handwritten",
+      "dataset": "CIFAR-100",
+      "event_directory": "outputs/tensorboard/exp23_handwritten",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792731563.autodl-container-g1f8p6tjj9-771b7b4b.9114.0",
+          "sha256": "f5d40ed5bb159953a0f9571876dc5359f7c7b4a6d10e3aa2ee450b70b474ca9d"
+        }
+      ],
+      "downloaded_csv": null,
+      "exported_csv": "exp23_handwritten.csv",
+      "exported_csv_sha256": "453c4b86cd38bad3d29f64e49157f1f33533f08eaeffb67a631a7c201d0290dc",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp21_open_clip",
+      "dataset": "CIFAR-100",
+      "event_directory": "outputs/tensorboard/exp21_open_clip",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792695067.autodl-container-612d499cae-aaa6e3a4.10073.0",
+          "sha256": "99f7589c62f31e7c41bbe86fb095914ec13739623f7deb4f3fa2e9f43ee63203"
+        }
+      ],
+      "downloaded_csv": null,
+      "exported_csv": "exp21_open_clip.csv",
+      "exported_csv_sha256": "632ff8a42fdb527167e5b7ca65bdbb8a14f046668b920ac21f2fd77de18528af",
+      "epochs": 93,
+      "scalar_samples": 465
+    },
+    {
+      "run": "exp11_more_aug",
+      "dataset": "CIFAR-10",
+      "event_directory": "outputs/tensorboard/exp11_more_aug",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792234790.autodl-container-612d499cae-aaa6e3a4.6420.0",
+          "sha256": "4609dbbca6cc57abd17338204ea574f4a26d8f2dc42fd3c3ef67fd20c8a2f020"
+        },
+        {
+          "name": "events.out.tfevents.1792234887.autodl-container-612d499cae-aaa6e3a4.6979.0",
+          "sha256": "641198d5ea9b4013e08ccf96341e48b8fe76edbe4aa16e6490a380b2ad6df2e5"
+        },
+        {
+          "name": "events.out.tfevents.1792234964.autodl-container-612d499cae-aaa6e3a4.7870.0",
+          "sha256": "916a24fa6d3cde47f3b4f390414513a23add74c77a8d83cd51308cd0a21bc83a"
+        },
+        {
+          "name": "events.out.tfevents.1792235053.autodl-container-612d499cae-aaa6e3a4.8782.0",
+          "sha256": "d7977e96d321be19c1a7e813dba1da6710fd41cdc6ddfe9ee0cf45b5b72d4c32"
+        },
+        {
+          "name": "events.out.tfevents.1792235338.autodl-container-612d499cae-aaa6e3a4.10211.0",
+          "sha256": "9294fc07c77e2720ce4ec952c6bd81f669502cbdf1713d0db64a7d8025a954d2"
+        },
+        {
+          "name": "events.out.tfevents.1792235548.autodl-container-612d499cae-aaa6e3a4.10995.0",
+          "sha256": "4f61fd1522fc9fe2ebe07a056e86936b051cb4d2bd68655c5b0860106055376a"
+        },
+        {
+          "name": "events.out.tfevents.1792235797.autodl-container-612d499cae-aaa6e3a4.11836.0",
+          "sha256": "28fcc88d186fc8a353609fec5b45f4f2b9c8c7aaed02965e91f54740fa3b834d"
+        },
+        {
+          "name": "events.out.tfevents.1792235998.autodl-container-612d499cae-aaa6e3a4.12619.0",
+          "sha256": "c52944909c1eb38a1813e022192e5ddd0277925e1cc58689c5d2675e175329db"
+        },
+        {
+          "name": "events.out.tfevents.1792236197.autodl-container-612d499cae-aaa6e3a4.13354.0",
+          "sha256": "495f281eef7480cf49f2e2e6412f6ad3018560d0d638d4defff4f45d1b42b14a"
+        }
+      ],
+      "downloaded_csv": {
+        "name": "tensorboard_exp11_more_aug.csv",
+        "sha256": "be8ab1db0a0d6bdc8d2eaa00c28d40fdfd1136d3be1cf0cb75842e966ad1aa70",
+        "is_html": true
+      },
+      "exported_csv": "exp11_more_aug.csv",
+      "exported_csv_sha256": "49a325e75963beeabe57309b1bb51693ca1766fb72f66df57f9d6bc32347ea46",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp12_dropout",
+      "dataset": "CIFAR-10",
+      "event_directory": "outputs/tensorboard/exp12_dropout",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792301445.autodl-container-612d499cae-aaa6e3a4.4710.0",
+          "sha256": "d1fa7acf62d5fe44a5f9d99d7dda40d6508f4ad66e65694d38f55b7936e04452"
+        }
+      ],
+      "downloaded_csv": {
+        "name": "tensorboard_exp12_dropout.csv",
+        "sha256": "be8ab1db0a0d6bdc8d2eaa00c28d40fdfd1136d3be1cf0cb75842e966ad1aa70",
+        "is_html": true
+      },
+      "exported_csv": "exp12_dropout.csv",
+      "exported_csv_sha256": "7581fbd5088fe296a0b74c13d7fdfbb2c47ab0b9cb28910cc7d33303bb16da11",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp13_dropout_cifar-100",
+      "dataset": "CIFAR-100",
+      "event_directory": "outputs/tensorboard/exp13_dropout_cifar-100",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792341625.autodl-container-612d499cae-aaa6e3a4.4344.0",
+          "sha256": "b9bc700c6e76ce10f41dac57c91a4a42e890446f2fb4c7b66814d05139be4fd8"
+        }
+      ],
+      "downloaded_csv": {
+        "name": "tensorboard_exp13_dropout_cifar-100.csv",
+        "sha256": "be8ab1db0a0d6bdc8d2eaa00c28d40fdfd1136d3be1cf0cb75842e966ad1aa70",
+        "is_html": true
+      },
+      "exported_csv": "exp13_dropout_cifar-100.csv",
+      "exported_csv_sha256": "60fa71af53fb468d443483dc7a24d38d3a8f6106e57aaa17d1913601798b0d2e",
+      "epochs": 100,
+      "scalar_samples": 500
+    },
+    {
+      "run": "exp15_lr1e-4",
+      "dataset": "CIFAR-100",
+      "event_directory": "outputs/tensorboard/exp15_lr1e-4",
+      "event_files": [
+        {
+          "name": "events.out.tfevents.1792466158.autodl-container-612d499cae-aaa6e3a4.10841.0",
+          "sha256": "f4509b195081620cd9bda8cb6fbd2767683065fb08994817a23cb4d6d2d30177"
+        },
+        {
+          "name": "events.out.tfevents.1792739903.autodl-container-g1f8p6tjj9-771b7b4b.15208.0",
+          "sha256": "33841662aacceb7d73f890eba6721ea74e53f55dbce3b223d04f5799441b7dee"
+        }
+      ],
+      "downloaded_csv": {
+        "name": "tensorboard_exp15_lr1e-4.csv",
+        "sha256": "be8ab1db0a0d6bdc8d2eaa00c28d40fdfd1136d3be1cf0cb75842e966ad1aa70",
+        "is_html": true
+      },
+      "exported_csv": "exp15_lr1e-4.csv",
+      "exported_csv_sha256": "a92b6cf769268a040576a6c0928085101742d675c37a24148a5c120fcddcee27",
+      "epochs": 100,
+      "scalar_samples": 500
+    }
+  ]
+}

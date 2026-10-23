@@ -1,0 +1,52 @@
+{
+  "archive": "outputs/tensorboard/cc3m_tensorboard.zip",
+  "archive_sha256": "43755121c579db5c0bde9f26f8abb5ba8ee0046018f850968e4a91a93dc67be4",
+  "event_files_with_scalars": [
+    "tensorboard/events.out.tfevents.1792484362.88022a438d4c.16370.0",
+    "tensorboard/events.out.tfevents.1792489343.7e523fcc9c11.9495.0",
+    "tensorboard/events.out.tfevents.1792562086.914a459736a3.4036.0",
+    "tensorboard/events.out.tfevents.1792572160.a4a29775648b.3382.0",
+    "tensorboard/events.out.tfevents.1792635698.e494aaad855f.6856.0"
+  ],
+  "train_steps": [
+    50,
+    44000
+  ],
+  "latest_train_loss": 1.0258593559265137,
+  "validation_samples_per_evaluation": 1024,
+  "latest_validation_metrics": {
+    "val/loss": {
+      "step": 44000,
+      "value": 3.82700514793396
+    },
+    "val/i2t_R@1": {
+      "step": 44000,
+      "value": 0.236328125
+    },
+    "val/i2t_R@5": {
+      "step": 44000,
+      "value": 0.4775390625
+    },
+    "val/i2t_R@10": {
+      "step": 44000,
+      "value": 0.587890625
+    },
+    "val/t2i_R@1": {
+      "step": 44000,
+      "value": 0.275390625
+    },
+    "val/t2i_R@5": {
+      "step": 44000,
+      "value": 0.5556640625
+    },
+    "val/t2i_R@10": {
+      "step": 44000,
+      "value": 0.6650390625
+    }
+  },
+  "notes": [
+    "Multiple TensorBoard event files were merged by scalar global_step.",
+    "Validation retrieval metrics are computed on 1,024 recorded samples per evaluation; this is not a full validation-set result.",
+    "The archive contains scalar logs only; no final training-completion status or checkpoint was inferred."
+  ]
+}

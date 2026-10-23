@@ -34,6 +34,14 @@ def main(args):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     train_preprocess = eval_preprocess = None
+    train_transform = eval_transform = None
+    if "open_clip" in (args.image_preprocess, args.eval_preprocess):
+        from open_clip.transform import PreprocessCfg, image_transform_v2
+        preprocess_cfg = PreprocessCfg(size=(config.img_size, config.img_size))
+        if args.image_preprocess == "open_clip":
+            train_transform = image_transform_v2(preprocess_cfg, is_train=True)
+        if args.eval_preprocess == "open_clip":
+            eval_transform = image_transform_v2(preprocess_cfg, is_train=False)
     if args.image_preprocess == "cuda":
         train_preprocess = BatchImagePreprocess(config.img_size, args.dataset, aug=True).to(device)
     if args.eval_preprocess == "cuda":
@@ -43,16 +51,19 @@ def main(args):
     train_ds = Dataset(
         args.data_root, True, True, config.img_size, args.context_length, config.vocab_size,
         dataset_name=args.dataset, raw_images=args.image_preprocess == "cuda",
+        image_transform=train_transform,
     )
 
     train_eval_ds = Dataset(
         args.data_root, True, False, config.img_size, args.context_length, config.vocab_size,
         dataset_name=args.dataset, class_tokens=train_ds.class_tokens, raw_images=args.eval_preprocess == "cuda",
+        image_transform=eval_transform,
     )
 
     test_ds = Dataset(
         args.data_root, False, False, config.img_size, args.context_length, config.vocab_size,
         dataset_name=args.dataset, class_tokens=train_ds.class_tokens, raw_images=args.eval_preprocess == "cuda",
+        image_transform=eval_transform,
     )
 
     train_loader = DataLoader(
@@ -270,7 +281,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", choices=("cifar10", "cifar100"), default="cifar10")
     parser.add_argument("--data_root", type=Path, default=Path(data_root), help="CIFAR 数据下载/缓存目录")
-    parser.add_argument("--context_length", type=int, help="文本长度；CIFAR-100 默认至少 16，CIFAR-10 沿用 config")
+    parser.add_argument("--context_length", type=int, help="文本长度；CIFAR-10 默认 8，CIFAR-100 默认 16")
     parser.add_argument("--n", type=str, required=True, help="实验次数/备注")
     parser.add_argument("--save_dir", type=Path, required=True, help="模型保存路径")
     parser.add_argument("--resume", action="store_true", help="恢复模型、优化器和原学习率计划")
@@ -280,15 +291,15 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--num_workers", type=int, default=8)
-    parser.add_argument("--image_preprocess", choices=("cpu", "cuda"), default="cuda",help="训练图像预处理设备；cuda 使用 Kornia")
-    parser.add_argument("--eval_preprocess", choices=("cpu", "cuda"), default="cuda",help="评估图像预处理设备，默认 cuda")
+    parser.add_argument("--image_preprocess", choices=("cpu", "cuda", "open_clip"), default="open_clip",help="训练图像预处理；默认 OpenCLIP 预处理，cpu/cuda 为原 CIFAR 增强")
+    parser.add_argument("--eval_preprocess", choices=("cpu", "cuda", "open_clip"), default="open_clip",help="评估图像预处理；默认 OpenCLIP 预处理")
     parser.add_argument("--learning_rate", type=float, default=1e-4)
     parser.add_argument("--weight_decay", type=float, default=0.01)   # 添加weight_decay参数
     parser.add_argument("--num_epochs", type=int, default=100)
     parser.add_argument("--warmup_epochs", type=int, default=5)
     args = parser.parse_args()
     if args.context_length is None:
-        args.context_length = max(config.context_length, 16) if args.dataset == "cifar100" else config.context_length
+        args.context_length = 8 if args.dataset == "cifar10" else 16
 
     args.save_dir = args.save_dir / f"exp{args.n}"
     args.save_dir.mkdir(parents=True, exist_ok=True)

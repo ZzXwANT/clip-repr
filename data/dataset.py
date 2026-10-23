@@ -17,7 +17,7 @@ CIFAR_STATS = {
 
 class Dataset(Dataset):
     def __init__(self, root, train: bool, aug: bool, img_size, context_length, vocab_size,
-                 dataset_name="cifar10", class_tokens=None, raw_images=False):
+                 dataset_name="cifar10", class_tokens=None, raw_images=False, image_transform=None):
         self.dataset_name = dataset_name
         self.raw_images = raw_images
         mean, std = CIFAR_STATS[dataset_name]
@@ -60,7 +60,7 @@ class Dataset(Dataset):
                 transforms.Normalize(mean, std),
             ]
         )
-        self.transform = self.transform_aug if aug else self.transform
+        self.transform = image_transform if image_transform is not None else (self.transform_aug if aug else self.transform)
         dataset_class = datasets.CIFAR100 if dataset_name == "cifar100" else datasets.CIFAR10
         self.ds = dataset_class(
             root=root, train=train, download=True,

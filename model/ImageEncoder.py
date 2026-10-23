@@ -17,7 +17,7 @@ class PatchEmbedding(nn.Module):
             out_channels = self.embed_dims,
             kernel_size = self.patch_size,
             stride = self.patch_size,
-            bias=False,         # cifar-10训练时没禁bias
+            bias=False,
             )
         
     def forward(self, x):     # (B, C, img_size, img_size)
